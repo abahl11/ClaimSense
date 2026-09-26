@@ -1,0 +1,57 @@
+# Central configuration for the wc-claim-cost project.
+# Every tunable value lives here; code reads it through src/config.py.
+# Relative paths are resolved against the project root, not the current directory.
+#
+# Sections are added as each phase is built so that every value has a documented reason:
+#   Phase 1: cleaning rules      Phase 3: features, keyword dictionaries, text layers
+#   Phase 5: regression models   Phase 6: classifier       Phase 7: SHAP / fairness
+
+# The single seed used by every stochastic component (splits, models, SVD, KMeans, Optuna).
+random_seed: 42
+
+paths:
+  raw_data: data/raw/train.csv
+  processed_dir: data/processed
+  models_dir: models
+  reports_dir: reports
+  figures_dir: reports/figures
+  metrics_dir: reports/metrics
+  log_file: logs/pipeline.log
+
+logging:
+  level: INFO
+  format: "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s"
+  datefmt: "%Y-%m-%d %H:%M:%S"
+
+data:
+  source_url: https://www.kaggle.com/competitions/actuarial-loss-estimation
+  id_column: ClaimNumber
+  target: UltimateIncurredClaimCost
+  initial_estimate: InitialIncurredCalimsCost # the "Calims" typo is in the source file
+  text_column: ClaimDescription
+  date_columns: [DateTimeOfAccident, DateReported]
+  # Schema documented for the Kaggle file. The validate stage checks the real file against it.
+  expected_columns:
+    - ClaimNumber
+    - DateTimeOfAccident
+    - DateReported
+    - Age
+    - Gender
+    - MaritalStatus
+    - DependentChildren
+    - DependentsOther
+    - WeeklyWages
+    - PartTimeFullTime
+    - HoursWorkedPerWeek
+    - DaysWorkedPerWeek
+    - ClaimDescription
+    - InitialIncurredCalimsCost
+    - UltimateIncurredClaimCost
+  inspect_head_rows: 5
+
+split:
+  date_column: DateTimeOfAccident
+  # The most recent 20% of claims by accident date form the final test set, used once at the end.
+  test_fraction: 0.20
+  # K-fold cross-validation inside the training period for model selection and tuning.
+  cv_folds: 5

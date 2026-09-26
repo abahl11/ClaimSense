@@ -1,0 +1,33 @@
+# Tool configuration only. Dependencies are pinned in requirements.txt.
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+# E/W/F: pycodestyle + pyflakes, I: import order, B: bugbear, UP: modern syntax,
+# N: naming, SIM: simplifications, T20: no print(), D: docstrings, ANN: type hints.
+select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "T20", "D", "ANN"]
+ignore = [
+    "N803", # allow ML convention of capitalised argument names such as X
+    "N806", # allow ML convention of capitalised variable names such as X_train
+    "D105", # magic methods do not need docstrings
+    "D107", # __init__ is documented on the class
+    "ANN401", # allow typing.Any for nested config values
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "ANN"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
