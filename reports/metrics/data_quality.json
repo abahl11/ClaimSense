@@ -1,0 +1,264 @@
+{
+  "raw_rows": 54000,
+  "raw_columns": 15,
+  "clean_rows": 54000,
+  "schema": {
+    "missing": [],
+    "unexpected": []
+  },
+  "duplicates": {
+    "Exact duplicate rows": 0,
+    "Duplicate claim numbers": 0,
+    "Rows identical apart from the claim number": 0
+  },
+  "rules": [
+    {
+      "column": "ClaimNumber",
+      "issue": "Duplicate claim number",
+      "rows": 0,
+      "pct_rows": 0.0,
+      "action": "Dropped (first occurrence kept)",
+      "changes_data": true
+    },
+    {
+      "column": "UltimateIncurredClaimCost",
+      "issue": "Ultimate cost missing or not positive",
+      "rows": 0,
+      "pct_rows": 0.0,
+      "action": "Dropped",
+      "changes_data": true
+    },
+    {
+      "column": "DateTimeOfAccident",
+      "issue": "Accident date missing or unparseable",
+      "rows": 0,
+      "pct_rows": 0.0,
+      "action": "Dropped",
+      "changes_data": true
+    },
+    {
+      "column": "DateReported",
+      "issue": "Report date missing or unparseable",
+      "rows": 0,
+      "pct_rows": 0.0,
+      "action": "Left missing (report delay imputed in the model pipeline)",
+      "changes_data": false
+    },
+    {
+      "column": "DateReported",
+      "issue": "Report date earlier than accident date",
+      "rows": 0,
+      "pct_rows": 0.0,
+      "action": "Report date set to missing",
+      "changes_data": true
+    },
+    {
+      "column": "DateReported",
+      "issue": "Reported more than 365 days after the accident",
+      "rows": 359,
+      "pct_rows": 0.6648148148148149,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "HoursWorkedPerWeek",
+      "issue": "Hours worked per week is 0 or negative",
+      "rows": 29,
+      "pct_rows": 0.053703703703703705,
+      "action": "Set to missing (imputed in the model pipeline)",
+      "changes_data": true
+    },
+    {
+      "column": "HoursWorkedPerWeek",
+      "issue": "Hours worked per week above 100",
+      "rows": 37,
+      "pct_rows": 0.06851851851851852,
+      "action": "Set to missing (imputed in the model pipeline)",
+      "changes_data": true
+    },
+    {
+      "column": "DaysWorkedPerWeek",
+      "issue": "Days worked per week outside 1-7",
+      "rows": 0,
+      "pct_rows": 0.0,
+      "action": "Set to missing (imputed in the model pipeline)",
+      "changes_data": true
+    },
+    {
+      "column": "DaysWorkedPerWeek",
+      "issue": "More than 24 hours per working day (hours / days)",
+      "rows": 17,
+      "pct_rows": 0.03148148148148148,
+      "action": "Days worked set to missing (imputed in the model pipeline)",
+      "changes_data": true
+    },
+    {
+      "column": "WeeklyWages",
+      "issue": "Weekly wage below 10",
+      "rows": 195,
+      "pct_rows": 0.3611111111111111,
+      "action": "Set to missing (imputed in the model pipeline)",
+      "changes_data": true
+    },
+    {
+      "column": "WeeklyWages",
+      "issue": "Implied hourly wage below 1.0 (weekly wage / hours)",
+      "rows": 232,
+      "pct_rows": 0.42962962962962964,
+      "action": "Weekly wage set to missing (imputed in the model pipeline)",
+      "changes_data": true
+    },
+    {
+      "column": "Gender",
+      "issue": "Gender recorded as U (unknown)",
+      "rows": 2,
+      "pct_rows": 0.003703703703703704,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "Gender",
+      "issue": "Gender missing or not one of M, F, U",
+      "rows": 0,
+      "pct_rows": 0.0,
+      "action": "Set to U",
+      "changes_data": true
+    },
+    {
+      "column": "MaritalStatus",
+      "issue": "MaritalStatus recorded as U (unknown)",
+      "rows": 5294,
+      "pct_rows": 9.803703703703704,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "MaritalStatus",
+      "issue": "MaritalStatus missing or not one of M, S, U",
+      "rows": 29,
+      "pct_rows": 0.053703703703703705,
+      "action": "Set to U",
+      "changes_data": true
+    },
+    {
+      "column": "PartTimeFullTime",
+      "issue": "PartTimeFullTime missing or not one of P, F",
+      "rows": 0,
+      "pct_rows": 0.0,
+      "action": "Set to missing (imputed in the model pipeline)",
+      "changes_data": true
+    },
+    {
+      "column": "ClaimDescription",
+      "issue": "Claim description missing or empty",
+      "rows": 0,
+      "pct_rows": 0.0,
+      "action": "Filled with an empty string",
+      "changes_data": true
+    },
+    {
+      "column": "ClaimDescription",
+      "issue": "Claim description has encoding errors, extra whitespace or lower case",
+      "rows": 2,
+      "pct_rows": 0.003703703703703704,
+      "action": "Normalised (bad characters replaced, whitespace collapsed, upper-cased)",
+      "changes_data": true
+    },
+    {
+      "column": "Age",
+      "issue": "Age below 16",
+      "rows": 201,
+      "pct_rows": 0.37222222222222223,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "Age",
+      "issue": "Age above 70",
+      "rows": 41,
+      "pct_rows": 0.07592592592592592,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "WeeklyWages",
+      "issue": "Weekly wage above 2,000",
+      "rows": 66,
+      "pct_rows": 0.12222222222222222,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "WeeklyWages",
+      "issue": "Weekly wage exactly 200",
+      "rows": 12372,
+      "pct_rows": 22.91111111111111,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "WeeklyWages",
+      "issue": "Weekly wage exactly 500",
+      "rows": 4271,
+      "pct_rows": 7.909259259259259,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "PartTimeFullTime",
+      "issue": "Part-time with at least 38 hours a week",
+      "rows": 714,
+      "pct_rows": 1.3222222222222222,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "PartTimeFullTime",
+      "issue": "Full-time with fewer than 20 hours a week",
+      "rows": 228,
+      "pct_rows": 0.4222222222222222,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "DateTimeOfAccident",
+      "issue": "Accident time recorded as exactly 00:00",
+      "rows": 688,
+      "pct_rows": 1.2740740740740741,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    },
+    {
+      "column": "InitialIncurredCalimsCost",
+      "issue": "Initial estimate of 1 or less",
+      "rows": 46,
+      "pct_rows": 0.08518518518518518,
+      "action": "None (kept as recorded)",
+      "changes_data": false
+    }
+  ],
+  "target": {
+    "count": 54000,
+    "min": 121.8868054,
+    "median": 3371.2417305,
+    "mean": 11003.36916893328,
+    "max": 4027135.935,
+    "std": 33390.991292287166,
+    "skew_raw": 37.552503812234775,
+    "skew_log1p": 0.2868331681130296,
+    "top_1pct_cost_share": 0.20627544572648857,
+    "top_10pct_cost_share": 0.6317154138782423
+  },
+  "target_percentiles": {
+    "1%": 207.910970483,
+    "5%": 306.55692837500004,
+    "10%": 423.89078703000007,
+    "25%": 926.3384492,
+    "50%": 3371.2417305,
+    "75%": 8197.24864775,
+    "90%": 24005.783948999997,
+    "95%": 45224.18443549981,
+    "99%": 139024.96736200026,
+    "99.9%": 333002.3258363747
+  }
+}

@@ -14,7 +14,9 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from src.config import Config, load_config
-from src.data.load import compare_columns, load_raw, log_overview
+from src.data.clean import clean_claims, save_clean
+from src.data.load import load_raw
+from src.data.validate import run_validation
 from src.logging_setup import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -22,20 +24,10 @@ logger = logging.getLogger(__name__)
 StageFn = Callable[[Config], None]
 
 
-def run_validate(cfg: Config) -> None:
-    """Load the raw data, log an overview, and check its columns against the config.
-
-    Raises:
-        ValueError: If any documented column is missing from the file.
-    """
-    df = load_raw(cfg)
-    log_overview(df, head_rows=cfg["data"]["inspect_head_rows"])
-    diff = compare_columns(df.columns, cfg["data"]["expected_columns"])
-    if diff["unexpected"]:
-        logger.warning("Columns in the file but not in the config: %s", diff["unexpected"])
-    if diff["missing"]:
-        raise ValueError(f"Columns in the config but missing from the file: {diff['missing']}")
-    logger.info("All %d expected columns are present.", len(cfg["data"]["expected_columns"]))
+def run_clean(cfg: Config) -> None:
+    """Apply the deterministic cleaning rules and save the cleaned table."""
+    result = clean_claims(load_raw(cfg), cfg)
+    save_clean(result.data, cfg)
 
 
 def _planned(stage: str, phase: int) -> StageFn:
@@ -49,8 +41,8 @@ def _planned(stage: str, phase: int) -> StageFn:
 
 # Execution order for --stage all.
 STAGES: dict[str, StageFn] = {
-    "validate": run_validate,
-    "clean": _planned("clean", 1),
+    "validate": run_validation,
+    "clean": run_clean,
     "eda": _planned("eda", 2),
     "features": _planned("features", 3),
     "train_reg": _planned("train_reg", 5),

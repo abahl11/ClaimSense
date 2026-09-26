@@ -16,10 +16,13 @@ def test_paths_resolve_inside_project():
         assert cfg.path(key).is_relative_to(PROJECT_ROOT)
 
 
-def test_key_columns_are_in_expected_schema():
-    data = load_config()["data"]
-    for key in ("id_column", "target", "initial_estimate", "text_column"):
-        assert data[key] in data["expected_columns"]
+def test_column_lists_use_known_logical_names():
+    cfg = load_config()
+    data = cfg["data"]
+    for group in ("date_columns", "numeric_columns", "categorical_columns"):
+        assert set(data[group]) <= set(data["columns"])
+    assert set(cfg["cleaning"]["categories"]) <= set(data["columns"])
+    assert cfg.col("target") in cfg.expected_columns
 
 
 def test_missing_section_raises(tmp_path):

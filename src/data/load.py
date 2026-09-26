@@ -54,6 +54,20 @@ def compare_columns(actual: Iterable[str], expected: Iterable[str]) -> dict[str,
     }
 
 
+def load_clean(cfg: Config) -> pd.DataFrame:
+    """Read the cleaned Parquet table written by the clean stage.
+
+    Raises:
+        FileNotFoundError: If the clean stage has not been run yet.
+    """
+    path = cfg.path("clean_data")
+    if not path.is_file():
+        raise FileNotFoundError(f"Cleaned data not found at {path}. Run --stage clean first.")
+    df = pd.read_parquet(path)
+    logger.info("Loaded %d cleaned rows from %s", len(df), path)
+    return df
+
+
 def log_overview(df: pd.DataFrame, head_rows: int) -> None:
     """Log the shape, column dtypes and first rows of a DataFrame.
 

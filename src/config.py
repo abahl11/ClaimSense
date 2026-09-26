@@ -50,6 +50,19 @@ class Config:
         """
         return self.root / self.settings["paths"][key]
 
+    def col(self, name: str) -> str:
+        """Return the source column name for a logical name, e.g. ``"weekly_wages"``."""
+        return self.settings["data"]["columns"][name]
+
+    def cols(self, names: list[str]) -> list[str]:
+        """Return the source column names for a list of logical names."""
+        return [self.col(name) for name in names]
+
+    @property
+    def expected_columns(self) -> list[str]:
+        """Every source column the project expects in the raw file."""
+        return list(self.settings["data"]["columns"].values())
+
 
 def load_config(config_path: Path | None = None, root: Path = PROJECT_ROOT) -> Config:
     """Parse the YAML config file and check that required sections exist.

@@ -12,6 +12,9 @@ random_seed: 42
 paths:
   raw_data: data/raw/train.csv
   processed_dir: data/processed
+  clean_data: data/processed/claims_clean.parquet
+  data_quality_report: reports/data_quality_report.md
+  data_quality_metrics: reports/metrics/data_quality.json
   models_dir: models
   reports_dir: reports
   figures_dir: reports/figures
@@ -25,33 +28,101 @@ logging:
 
 data:
   source_url: https://www.kaggle.com/competitions/actuarial-loss-estimation
-  id_column: ClaimNumber
-  target: UltimateIncurredClaimCost
-  initial_estimate: InitialIncurredCalimsCost # the "Calims" typo is in the source file
-  text_column: ClaimDescription
-  date_columns: [DateTimeOfAccident, DateReported]
-  # Schema documented for the Kaggle file. The validate stage checks the real file against it.
-  expected_columns:
-    - ClaimNumber
-    - DateTimeOfAccident
-    - DateReported
-    - Age
-    - Gender
-    - MaritalStatus
-    - DependentChildren
-    - DependentsOther
-    - WeeklyWages
-    - PartTimeFullTime
-    - HoursWorkedPerWeek
-    - DaysWorkedPerWeek
-    - ClaimDescription
-    - InitialIncurredCalimsCost
-    - UltimateIncurredClaimCost
+  # Logical name -> column name in the source file. Code refers to logical names only
+  # (cfg.col("weekly_wages")), and the validate stage checks the file has every column here.
+  columns:
+    claim_id: ClaimNumber
+    accident_date: DateTimeOfAccident
+    report_date: DateReported
+    age: Age
+    gender: Gender
+    marital_status: MaritalStatus
+    dependent_children: DependentChildren
+    dependents_other: DependentsOther
+    weekly_wages: WeeklyWages
+    part_time: PartTimeFullTime
+    hours_per_week: HoursWorkedPerWeek
+    days_per_week: DaysWorkedPerWeek
+    description: ClaimDescription
+    initial_estimate: InitialIncurredCalimsCost # the "Calims" typo is in the source file
+    target: UltimateIncurredClaimCost
+  date_columns: [accident_date, report_date]
+  datetime_format: "%Y-%m-%dT%H:%M:%SZ" # all timestamps share one zone, so they are kept tz-naive
+  numeric_columns:
+    - age
+    - dependent_children
+    - dependents_other
+    - weekly_wages
+    - hours_per_week
+    - days_per_week
+    - initial_estimate
+    - target
+  categorical_columns: [gender, marital_status, part_time]
+  codes:
+    part_time: P
+    full_time: F
   inspect_head_rows: 5
 
 split:
-  date_column: DateTimeOfAccident
+  date_column: accident_date
   # The most recent 20% of claims by accident date form the final test set, used once at the end.
   test_fraction: 0.20
   # K-fold cross-validation inside the training period for model selection and tuning.
   cv_folds: 5
+
+# Phase 1: deterministic cleaning rules (src/data/clean.py).
+# Every threshold is fixed here in advance; nothing is learned from the data, so the same
+# rules apply to new claims at prediction time. Invalid values become NaN and are imputed
+# later inside the model pipeline, fit on training rows only.
+cleaning:
+  hours_per_week_max: 100 # above this means more than 14 hours every day of the week
+  hours_per_day_max: 24 # physical limit for hours / days worked
+  days_per_week_range: [1, 7]
+  weekly_wage_min: 10 # below this cannot be a real weekly wage for any hours worked
+  hourly_wage_min: 1.0 # far below any minimum or junior wage in the data period
+  categories: # keyed by logical column name
+    gender: { valid: [M, F, U], fill: U }
+    marital_status: { valid: [M, S, U], fill: U }
+    part_time: { valid: [P, F], fill: null } # null means set to missing
+  unknown_category: U
+  text_bad_codepoints: [0xFFFD] # U+FFFD replacement character, left by an encoding error
+  text_missing_fill: ""
+  # Plausibility checks: counted and reported, values kept as recorded.
+  flags:
+    young_age_below: 16
+    old_age_above: 70
+    high_weekly_wage_above: 2000
+    heaped_wage_values: [200, 500]
+    part_time_hours_at_least: 38
+    full_time_hours_below: 20
+    suspect_accident_hour: 0
+    nominal_initial_estimate_max: 1
+    long_report_delay_days: 365
+  examples_per_rule: 5 # sample affected rows shown in the data quality report
+
+reporting:
+  target_percentiles: [0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 0.999]
+  reference_percentiles: [0.50, 0.90, 0.99] # marked on the target histogram
+  raw_hist_clip_percentile: 0.99 # raw-scale histogram is cut here so the bulk is visible
+  top_share_fractions: [0.01, 0.10] # share of total cost carried by the largest claims
+  hour_comparison_window: [1, 4] # hours compared against the suspect 00:00 count
+  recent_years: 2 # "last N accident years" used when describing recording changes
+
+# Figure style, shared by every report. Colours are the validated reference palette
+# from the dataviz method: slots are used in this fixed order, never cycled.
+plots:
+  dpi: 150
+  width: 10
+  height: 4.5
+  font_family: ["Segoe UI", "DejaVu Sans"]
+  font_size: 10
+  line_width: 2
+  hist_bins: 60
+  surface: "#fcfcfb"
+  ink_primary: "#0b0b0b"
+  ink_secondary: "#52514e"
+  ink_muted: "#898781"
+  gridline: "#e1e0d9"
+  baseline: "#c3c2b7"
+  de_emphasis: "#c3c2b7"
+  categorical: ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
