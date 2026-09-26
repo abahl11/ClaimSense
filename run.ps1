@@ -26,6 +26,9 @@ $CodeDirs = @('src', 'tests', 'app')
 
 function Invoke-Checked {
     param([string]$Exe, [string[]]$Arguments)
+    # Judge success by exit code only: tools such as black write normal messages to stderr,
+    # which Windows PowerShell 5.1 would otherwise turn into a terminating error.
+    $ErrorActionPreference = 'Continue'
     & $Exe @Arguments
     if ($LASTEXITCODE -ne 0) { throw "Command failed with exit code ${LASTEXITCODE}: $Exe $($Arguments -join ' ')" }
 }

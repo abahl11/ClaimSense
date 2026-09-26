@@ -57,7 +57,7 @@ def figure_markdown(image: Path, report: Path, title: str, takeaway: str) -> str
 def write_text(text: str, path: Path) -> None:
     """Write UTF-8 text to ``path``, creating parent folders."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    path.write_text(text, encoding="utf-8", newline="\n")
     logger.info("Wrote %s", path)
 
 
@@ -79,5 +79,5 @@ def _to_builtin(value: Any) -> Any:
 def write_json(data: dict[str, Any], path: Path) -> None:
     """Write a dict as indented JSON, converting numpy and pandas scalars."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, default=_to_builtin), encoding="utf-8")
+    path.write_text(json.dumps(data, indent=2, default=_to_builtin), encoding="utf-8", newline="\n")
     logger.info("Wrote %s", path)
