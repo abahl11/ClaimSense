@@ -103,6 +103,9 @@ split:
   # Time-ordered cross-validation inside the training period (Phase 4): each fold trains on
   # earlier accident dates and validates on the block that follows, like the final test.
   cv_folds: 5
+  # The most recent share of a training set, used to estimate quantities that must be
+  # measured out of time: the smearing factor (Phase 5) and probability calibration (Phase 6).
+  inner_holdout_fraction: 0.20
 
 # A claim is "high cost" if its ultimate cost is at or above this quantile of the TRAINING
 # target. The same cutoff is applied to the test set (Phase 6); EDA uses it too.

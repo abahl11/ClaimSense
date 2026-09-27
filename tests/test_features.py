@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 from src.data.clean import clean_claims
-from src.features import text_embed
 from src.features.build import build_preprocessor, feature_names, model_input_columns
 from src.features.report import FEATURE_DOCS
 from src.features.tabular import (
@@ -24,17 +23,6 @@ NO_EMBEDDINGS = {"embedding_clusters": False}
 
 def engineered(cfg, make_claims, *overrides) -> pd.DataFrame:
     return engineer_features(clean_claims(make_claims(*overrides), cfg).data, cfg)
-
-
-@pytest.fixture
-def fake_embeddings(monkeypatch):
-    """Replace the sentence-transformer with deterministic pseudo-embeddings."""
-
-    def fake(texts, *args, **kwargs):
-        seeds = [sum(map(ord, text)) for text in texts]
-        return np.array([np.random.default_rng(s).normal(size=8) for s in seeds])
-
-    monkeypatch.setattr(text_embed, "embed_texts", fake)
 
 
 def test_band_labels_integer_and_open_last_band():
@@ -178,30 +166,6 @@ def test_group_median_imputer_learns_only_from_fit_rows():
 # ---------------------------------------------------------------------------
 # Full preprocessing pipeline
 # ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def small_claims(cfg, make_claims):
-    rng = np.random.default_rng(0)
-    texts = [
-        "LIFTING BOX STRAINED LOWER BACK",
-        "CUT LEFT INDEX FINGER KNIFE",
-        "SLIPPED FELL BRUISED KNEE",
-    ]
-    overrides = [
-        {
-            "description": f"{texts[i % 3]} CASE {i}",
-            "age": int(rng.integers(18, 65)),
-            "weekly_wages": float(rng.uniform(200, 900)),
-            "initial_estimate": int(rng.integers(100, 20000)),
-            "accident_date": f"2001-{1 + i % 12:02d}-05T{i % 24:02d}:00:00Z",
-            "report_date": f"2001-{1 + i % 12:02d}-20T00:00:00Z",
-            "part_time": "P" if i % 4 == 0 else "F",
-        }
-        for i in range(60)
-    ]
-    overrides[0]["hours_per_week"] = 0.0  # becomes missing, then imputed
-    return clean_claims(make_claims(*overrides), cfg).data
 
 
 def test_pipeline_output_is_complete_and_excludes_target(cfg, small_claims):
