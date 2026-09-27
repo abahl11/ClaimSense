@@ -18,7 +18,7 @@ DEFAULT_CONFIG_PATH: Path = PROJECT_ROOT / "config" / "config.yaml"
 REQUIRED_SECTIONS: tuple[str, ...] = ("random_seed", "paths", "logging", "data", "split")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, repr=False)
 class Config:
     """Read-only view of the parsed YAML configuration.
 
@@ -29,6 +29,10 @@ class Config:
 
     settings: dict[str, Any]
     root: Path
+
+    def __repr__(self) -> str:
+        """Short form, so pipelines that hold a Config print readably."""
+        return f"Config(root={self.root})"
 
     def __getitem__(self, key: str) -> Any:
         """Return a top-level config section, for example ``cfg["data"]``."""
@@ -57,6 +61,11 @@ class Config:
     def cols(self, names: list[str]) -> list[str]:
         """Return the source column names for a list of logical names."""
         return [self.col(name) for name in names]
+
+    def resolve(self, names: list[str]) -> list[str]:
+        """Map logical source-column names to real names; engineered names pass through."""
+        columns = self.settings["data"]["columns"]
+        return [columns.get(name, name) for name in names]
 
     @property
     def expected_columns(self) -> list[str]:

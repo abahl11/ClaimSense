@@ -18,6 +18,7 @@ from src.config import Config, load_config
 from src.data.clean import clean_claims, save_clean
 from src.data.load import load_raw
 from src.data.validate import run_validation
+from src.features.report import run_features
 from src.logging_setup import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ STAGES: dict[str, StageFn] = {
     "validate": run_validation,
     "clean": run_clean,
     "eda": run_eda,
-    "features": _planned("features", 3),
+    "features": run_features,
     "train_reg": _planned("train_reg", 5),
     "train_clf": _planned("train_clf", 6),
     "explain": _planned("explain", 7),

@@ -49,6 +49,14 @@ def label_by_priority(matches: pd.DataFrame, other_label: str) -> pd.Series:
     return first.where(matches.any(axis=1), other_label)
 
 
+def apply_part_hierarchy(matches: pd.DataFrame, parents: dict[str, str]) -> pd.DataFrame:
+    """Drop a parent part where its child is also mentioned ("HAND ... FINGER" -> finger)."""
+    out = matches.copy()
+    for child, parent in parents.items():
+        out[parent] &= ~out[child]
+    return out
+
+
 def label_body_part(text: pd.Series, cfg: Config) -> tuple[pd.Series, pd.Series]:
     """Label the body part and count how many distinct body parts are mentioned.
 
@@ -57,10 +65,12 @@ def label_body_part(text: pd.Series, cfg: Config) -> tuple[pd.Series, pd.Series]
         cfg: Loaded project configuration.
 
     Returns:
-        The body-part label (a part, ``multiple`` or ``other``) and the count of parts.
+        The body-part label (a part, ``multiple`` or ``other``) and the count of parts,
+        after the child/parent hierarchy in ``text_rules.body_part_parents`` is applied.
     """
     rules = cfg["text_rules"]
-    matches = keyword_matches(text, compile_taxonomy(rules[BODY_PART]))
+    raw_matches = keyword_matches(text, compile_taxonomy(rules[BODY_PART]))
+    matches = apply_part_hierarchy(raw_matches, rules["body_part_parents"])
     count = matches.sum(axis=1)
     says_multiple = text.str.contains(compile_keywords(rules["multiple_keywords"]))
     label = label_by_priority(matches, rules["other_label"])

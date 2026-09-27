@@ -1,17 +1,23 @@
-"""Tabular feature helpers derived from the cleaned claims table.
+"""Tabular features derived from the cleaned claims table.
 
-Everything here is a fixed row-wise transformation (no statistics learned from data), so it
-can be computed before the train/test split without leakage. Phase 3 adds the remaining
-features and the scikit-learn pipeline that imputes and scales them on training rows only.
+Two kinds of transformation live here:
+
+* Row-wise feature engineering (:func:`engineer_features`, :class:`FeatureEngineer`). Fixed
+  formulas with no statistics learned from data, so they cannot leak information. Missing
+  inputs are left missing so that flags describe what was actually recorded.
+* Imputation (:class:`GroupMedianImputer`). This *does* learn from data (group medians), so
+  it only ever runs inside the model pipeline, where it is fit on training rows only.
 """
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
 
 from src.config import Config
 from src.data.clean import report_delay_days
+from src.features.text_rules import extract_text_rules
 
 
 def band_labels(edges: list[float], integer: bool) -> list[str]:
@@ -89,3 +95,161 @@ def dependents_group(df: pd.DataFrame, cfg: Config) -> pd.Series:
     labels = [str(n) for n in range(cap)] + [f"{cap}+"]
     grouped = pd.cut(total_dependents(df, cfg), bins=[*edges, np.inf], right=False, labels=labels)
     return grouped.rename("dependents_group")
+
+
+def as_flag(condition: pd.Series) -> pd.Series:
+    """Boolean condition as a 0/1 integer column (missing counts as 0)."""
+    return condition.fillna(False).astype(int)
+
+
+def calendar_features(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
+    """Accident year, month, weekday and hour, weekend and night-shift flags.
+
+    An accident recorded at exactly the suspect hour (00:00) is treated as "time unknown"
+    and is not counted as a night-shift accident.
+    """
+    f = cfg["features"]
+    accident = df[cfg.col("accident_date")]
+    hour = accident.dt.hour
+    time_unknown = hour == cfg["cleaning"]["flags"]["suspect_accident_hour"]
+    at_night = (hour > f["night_after_hour"]) | (hour < f["night_before_hour"])
+    return pd.DataFrame(
+        {
+            "report_delay_days": delay_days(df, cfg),
+            "accident_year": accident.dt.year,
+            "accident_month": accident.dt.month_name().str[:3],
+            "accident_weekday": accident.dt.day_name().str[:3],
+            "accident_hour": hour,
+            "is_weekend": as_flag(accident.dt.weekday.isin(f["weekend_days"])),
+            "accident_time_unknown": as_flag(time_unknown),
+            "is_night_shift": as_flag(at_night & ~time_unknown),
+        },
+        index=df.index,
+    )
+
+
+def work_features(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
+    """Wage, hours and part-time features; missing inputs give missing outputs."""
+    f, flags = cfg["features"], cfg["cleaning"]["flags"]
+    wages, hours, days, part_time = (
+        df[column]
+        for column in cfg.cols(["weekly_wages", "hours_per_week", "days_per_week", "part_time"])
+    )
+    return pd.DataFrame(
+        {
+            "log_weekly_wages": np.log1p(wages),
+            "hourly_wage": wages / hours.clip(lower=f["min_hours_for_rate"]),
+            "hours_per_day": hours / days,
+            "is_part_time": as_flag(part_time == cfg["data"]["codes"]["part_time"]),
+            "wage_is_default": as_flag(wages.isin(flags["heaped_wage_values"])),
+        },
+        index=df.index,
+    )
+
+
+def claimant_features(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
+    """Age band and total dependents (marital status is used as cleaned, with U = unknown)."""
+    return pd.DataFrame(
+        {
+            "age_band": age_band(df, cfg).astype(str),
+            "total_dependents": total_dependents(df, cfg),
+        },
+        index=df.index,
+    )
+
+
+def estimate_features(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
+    """Features of the adjuster's initial estimate, alone and relative to the weekly wage."""
+    f, flags = cfg["features"], cfg["cleaning"]["flags"]
+    initial = df[cfg.col("initial_estimate")]
+    return pd.DataFrame(
+        {
+            "log_initial_estimate": np.log1p(initial),
+            "initial_to_wage_ratio": initial / df[cfg.col("weekly_wages")],
+            "initial_is_default": as_flag(initial.isin(f["initial_default_values"])),
+            "initial_is_nominal": as_flag(initial <= flags["nominal_initial_estimate_max"]),
+        },
+        index=df.index,
+    )
+
+
+def engineer_features(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
+    """Add every row-wise engineered feature, including the Layer 1 text rules.
+
+    Args:
+        df: Cleaned claims (output of the clean stage, or a new claim for scoring).
+        cfg: Loaded project configuration.
+
+    Returns:
+        The input columns plus all engineered columns. Nothing is learned from the data.
+    """
+    parts = [
+        calendar_features(df, cfg),
+        work_features(df, cfg),
+        claimant_features(df, cfg),
+        estimate_features(df, cfg),
+        extract_text_rules(df[cfg.col("description")], cfg),
+    ]
+    return pd.concat([df, *parts], axis=1)
+
+
+class FeatureEngineer(BaseEstimator, TransformerMixin):
+    """Pipeline step wrapping :func:`engineer_features` (stateless: fit learns nothing)."""
+
+    def __init__(self, cfg: Config) -> None:
+        self.cfg = cfg
+
+    def fit(self, X: pd.DataFrame, y: object = None) -> FeatureEngineer:
+        """Record the input width; there is nothing else to learn."""
+        self.n_features_in_ = X.shape[1]
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Return ``X`` with the engineered columns added."""
+        return engineer_features(X, self.cfg)
+
+
+class GroupMedianImputer(BaseEstimator, TransformerMixin):
+    """Fill missing numeric values with the median of the row's group, learned in ``fit``.
+
+    Used with the part-time / full-time group, because hours and wages differ strongly
+    between the two. A row whose group is missing or unseen falls back to the overall
+    median. Missing-value indicators are added for the chosen raw columns, so the model can
+    still tell that a value was imputed.
+
+    Args:
+        group_column: Column defining the groups.
+        columns: Numeric columns to impute.
+        indicator_columns: Columns that also get a 0/1 "was missing" indicator.
+        indicator_names: Names of those indicator columns, in the same order.
+    """
+
+    def __init__(
+        self,
+        group_column: str,
+        columns: list[str],
+        indicator_columns: list[str],
+        indicator_names: list[str],
+    ) -> None:
+        self.group_column = group_column
+        self.columns = columns
+        self.indicator_columns = indicator_columns
+        self.indicator_names = indicator_names
+
+    def fit(self, X: pd.DataFrame, y: object = None) -> GroupMedianImputer:
+        """Learn per-group and overall medians from the (training) rows passed in."""
+        self.group_medians_ = X.groupby(self.group_column)[self.columns].median()
+        self.overall_medians_ = X[self.columns].median()
+        self.n_features_in_ = X.shape[1]
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Add missing indicators, then fill gaps with the learned medians."""
+        out = X.copy()
+        for column, name in zip(self.indicator_columns, self.indicator_names, strict=True):
+            out[name] = as_flag(out[column].isna())
+        for column in self.columns:
+            by_group = out[self.group_column].map(self.group_medians_[column])
+            fill = by_group.fillna(self.overall_medians_[column])
+            out[column] = out[column].fillna(fill)
+        return out

@@ -1,0 +1,106 @@
+{
+  "coverage_body_part": 0.9776851851851852,
+  "coverage_injury_nature": 0.8663888888888889,
+  "coverage_injury_cause": 0.7780092592592592,
+  "tfidf_vocabulary": 6952,
+  "svd_explained_variance": 0.17725093919032053,
+  "silhouette": {
+    "4": 0.1050250455737114,
+    "6": 0.09053891897201538,
+    "8": 0.07703927159309387,
+    "10": 0.0721723660826683,
+    "12": 0.06254851073026657,
+    "15": 0.06637731194496155,
+    "20": 0.06591153144836426,
+    "25": 0.06688913702964783
+  },
+  "n_clusters": 15,
+  "clusters": {
+    "7": {
+      "name": "Finger cuts and caught fingers",
+      "claims": 5147,
+      "median_cost": 800.8843134
+    },
+    "2": {
+      "name": "Lifting: lower back strain",
+      "claims": 4719,
+      "median_cost": 6669.191868
+    },
+    "0": {
+      "name": "Trips and falls with bruising",
+      "claims": 4323,
+      "median_cost": 2086.349307
+    },
+    "9": {
+      "name": "Lifting: shoulder and arm strain",
+      "claims": 3445,
+      "median_cost": 5010.671601
+    },
+    "3": {
+      "name": "Knife cuts",
+      "claims": 3419,
+      "median_cost": 564.7452438999999
+    },
+    "10": {
+      "name": "Back strain, no lifting mentioned",
+      "claims": 3298,
+      "median_cost": 6578.0174285
+    },
+    "4": {
+      "name": "Wrist and forearm injuries",
+      "claims": 3134,
+      "median_cost": 2363.5097235000003
+    },
+    "1": {
+      "name": "Slips on wet floors and stairs",
+      "claims": 2718,
+      "median_cost": 4221.1850595
+    },
+    "6": {
+      "name": "Knee injuries",
+      "claims": 2165,
+      "median_cost": 4603.287627000001
+    },
+    "8": {
+      "name": "Punctures and mixed wounds",
+      "claims": 2161,
+      "median_cost": 1749.2437100000002
+    },
+    "14": {
+      "name": "Neck and shoulder strain, incl. vehicle accidents",
+      "claims": 2011,
+      "median_cost": 5975.079527000001
+    },
+    "11": {
+      "name": "Eye: foreign body from grinding",
+      "claims": 2005,
+      "median_cost": 332.390056
+    },
+    "5": {
+      "name": "Eye: corneal abrasion and irritation",
+      "claims": 1772,
+      "median_cost": 584.44069975
+    },
+    "12": {
+      "name": "Ankle sprains",
+      "claims": 1747,
+      "median_cost": 2245.84092
+    },
+    "13": {
+      "name": "Burns",
+      "claims": 1136,
+      "median_cost": 893.8178273999999
+    }
+  },
+  "n_model_columns": 144,
+  "columns_per_branch": {
+    "rules_categorical": 47,
+    "categorical": 36,
+    "tfidf_svd": 20,
+    "embedding_clusters": 15,
+    "numeric": 11,
+    "binary": 10,
+    "log": 3,
+    "rules_numeric": 2
+  }
+}

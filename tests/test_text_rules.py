@@ -65,7 +65,7 @@ def test_cause_labels(cfg):
 
 def test_unmatched_text_is_other(cfg):
     other = cfg["text_rules"]["other_label"]
-    result = labels_for(cfg, "WORK STRESS")
+    result = labels_for(cfg, "GRINDING METAL")
     assert result[BODY_PART].iloc[0] == other
     assert result[INJURY_NATURE].iloc[0] == other
     assert result[NUM_BODY_PARTS].iloc[0] == 0
@@ -80,3 +80,32 @@ def test_coverage_counts_non_other_share(cfg):
     other = cfg["text_rules"]["other_label"]
     result = labels_for(cfg, "STRAINED LOWER BACK", "WORK STRESS")
     assert coverage(result, other)[BODY_PART] == 0.5
+
+
+def test_finger_with_its_hand_counts_as_finger(cfg):
+    result = labels_for(cfg, "JAMMED HAND FRACTURED MIDDLE FINGER")
+    assert result[BODY_PART].iloc[0] == "finger"
+    assert result[NUM_BODY_PARTS].iloc[0] == 1
+
+
+def test_hand_alone_is_hand(cfg):
+    assert labels_for(cfg, "BRUISED RIGHT HAND")[BODY_PART].iloc[0] == "hand"
+
+
+def test_hierarchy_does_not_hide_separate_areas(cfg):
+    result = labels_for(cfg, "CUT FINGER AND BRUISED KNEE")
+    assert result[BODY_PART].iloc[0] == cfg["text_rules"]["multiple_label"]
+
+
+@pytest.mark.parametrize(
+    ("text", "field", "label"),
+    [
+        ("SOFT TISSUE INJURY RIGHT KNEE", INJURY_NATURE, "soft_tissue"),
+        ("RIGHT WRIST TENDON SYNOVITIS", INJURY_NATURE, "inflammation"),
+        ("WORK RELATED STRESS", INJURY_NATURE, "psychological"),
+        ("MOTOR VEHICLE ACCIDENT WHIPLASH NECK", INJURY_CAUSE, "vehicle"),
+        ("CUT WITH KNIFE LACERATION THUMB", INJURY_CAUSE, "tool_use"),
+    ],
+)
+def test_categories_added_during_iteration(cfg, text, field, label):
+    assert labels_for(cfg, text)[field].iloc[0] == label

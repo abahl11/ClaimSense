@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib
+import numpy as np
+import pandas as pd
 
 matplotlib.use("Agg")  # figures are only written to files; no display is needed
 
@@ -101,6 +103,39 @@ def percent_axis(ax: Axes, axis: str = "y") -> None:
     formatter = FuncFormatter(lambda value, _pos: f"{value:.0%}")
     target = ax.yaxis if axis == "y" else ax.xaxis
     target.set_major_formatter(formatter)
+
+
+def hbar(ax: Axes, values: pd.Series, labels: pd.Series, fmt: str, cfg: Config) -> None:
+    """Horizontal bars in the first series colour with the value at each bar tip."""
+    p = cfg["plots"]
+    y = np.arange(len(values))
+    ax.barh(y, values.to_numpy(), height=0.6, color=series_color(cfg, 0))
+    for yi, value in zip(y, values, strict=True):
+        ax.text(value, yi, " " + fmt.format(value), va="center", color=p["ink_secondary"])
+    ax.set_yticks(y, labels.tolist())
+    ax.set_xlim(0, values.max() * 1.22)
+    ax.grid(axis="y", visible=False)
+    ax.grid(axis="x", visible=True)
+    ax.spines["left"].set_visible(True)
+    ax.tick_params(axis="x", labelbottom=False, length=0)
+
+
+def vbar(ax: Axes, labels: pd.Series, values: pd.Series, fmt: str, cfg: Config) -> None:
+    """Vertical bars in the first series colour with the value on each bar cap."""
+    p = cfg["plots"]
+    x = np.arange(len(values))
+    ax.bar(x, values.to_numpy(), width=0.6, color=series_color(cfg, 0))
+    for xi, value in zip(x, values, strict=True):
+        ax.text(
+            xi,
+            value,
+            fmt.format(value),
+            ha="center",
+            va="bottom",
+            color=p["ink_secondary"],
+            fontsize=p["font_size"] - 2,
+        )
+    ax.set_xticks(x, labels.tolist())
 
 
 def year_axis(ax: Axes) -> None:

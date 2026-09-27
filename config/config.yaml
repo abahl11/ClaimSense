@@ -1,10 +1,7 @@
 # Central configuration for the wc-claim-cost project.
 # Every tunable value lives here; code reads it through src/config.py.
 # Relative paths are resolved against the project root, not the current directory.
-#
-# Sections are added as each phase is built so that every value has a documented reason:
-#   Phase 1: cleaning rules      Phase 3: features, keyword dictionaries, text layers
-#   Phase 5: regression models   Phase 6: classifier       Phase 7: SHAP / fairness
+# Sections follow the pipeline order: data -> cleaning -> split -> features -> models -> reports.
 
 # The single seed used by every stochastic component (splits, models, SVD, KMeans, Optuna).
 random_seed: 42
@@ -13,20 +10,24 @@ paths:
   raw_data: data/raw/train.csv
   processed_dir: data/processed
   clean_data: data/processed/claims_clean.parquet
-  data_quality_report: reports/data_quality_report.md
-  data_quality_metrics: reports/metrics/data_quality.json
-  eda_report: reports/eda.md
-  eda_metrics: reports/metrics/eda.json
+  embeddings_cache: data/processed/description_embeddings.parquet
   models_dir: models
   reports_dir: reports
   figures_dir: reports/figures
   metrics_dir: reports/metrics
+  data_quality_report: reports/data_quality_report.md
+  data_quality_metrics: reports/metrics/data_quality.json
+  eda_report: reports/eda.md
+  eda_metrics: reports/metrics/eda.json
+  features_report: reports/features.md
+  features_metrics: reports/metrics/features.json
   log_file: logs/pipeline.log
 
 logging:
   level: INFO
   format: "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s"
   datefmt: "%Y-%m-%d %H:%M:%S"
+  quiet_loggers: [httpx, huggingface_hub, sentence_transformers, urllib3, matplotlib] # WARNING+ only
 
 data:
   source_url: https://www.kaggle.com/competitions/actuarial-loss-estimation
@@ -65,78 +66,6 @@ data:
     full_time: F
   inspect_head_rows: 5
 
-split:
-  date_column: accident_date
-  # The most recent 20% of claims by accident date form the final test set, used once at the end.
-  test_fraction: 0.20
-  # K-fold cross-validation inside the training period for model selection and tuning.
-  cv_folds: 5
-
-# A claim is "high cost" if its ultimate cost is at or above this quantile of the TRAINING
-# target. The same cutoff is applied to the test set (Phase 6); EDA uses it too.
-labels:
-  high_cost_quantile: 0.90
-
-# Band edges for grouped features. Bands include their lower edge; the last band is open.
-features:
-  age_band_edges: [0, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65]
-  wage_band_edges: [0, 200, 300, 400, 500, 750, 1000, 1500]
-  delay_band_edges: [0, 8, 15, 31, 61, 91, 181, 366] # days from accident to report
-  dependents_cap: 3 # 3 or more dependents are grouped together
-
-# Keyword taxonomy for ClaimDescription (src/features/text_rules.py). Keywords match whole
-# words. For injury_nature and injury_cause the categories are in PRIORITY order: when a
-# description matches several, the first listed wins (natures are ordered by severity).
-# For body_part, one match gives that part and two or more distinct parts give "multiple".
-text_rules:
-  other_label: other
-  multiple_label: multiple
-  multiple_keywords: [MULTIPLE]
-  body_part:
-    back: [BACK, LUMBAR, SPINE, SPINAL, COCCYX, DISC, VERTEBRA, VERTEBRAE, SCIATICA]
-    knee: [KNEE, KNEES, KNEECAP, PATELLA, MENISCUS]
-    shoulder: [SHOULDER, SHOULDERS, ROTATOR, CLAVICLE, COLLARBONE]
-    hand: [HAND, HANDS, PALM, KNUCKLE, KNUCKLES]
-    finger: [FINGER, FINGERS, THUMB, THUMBS, FINGERTIP, FINGERNAIL]
-    wrist: [WRIST, WRISTS, CARPAL]
-    arm: [ARM, ARMS, FOREARM, FOREARMS, ELBOW, ELBOWS, BICEP, BICEPS, TRICEP]
-    leg: [LEG, LEGS, THIGH, THIGHS, SHIN, SHINS, CALF, CALVES, HIP, HIPS, HAMSTRING]
-    foot: [FOOT, FEET, TOE, TOES, HEEL, HEELS, INSTEP]
-    ankle: [ANKLE, ANKLES, ACHILLES]
-    eye: [EYE, EYES, CORNEA, CORNEAL, EYELID, RETINA, CONJUNCTIVITIS]
-    head: [HEAD, FACE, FACIAL, FOREHEAD, SKULL, SCALP, NOSE, LIP, LIPS, MOUTH, TEETH, TOOTH, JAW, EAR, EARS, CHEEK, CHIN, CONCUSSION]
-    neck: [NECK, WHIPLASH, CERVICAL]
-  injury_nature:
-    fracture: [FRACTURE, FRACTURED, FRACTURES, BROKEN, BROKE]
-    crush: [CRUSH, CRUSHED, CRUSHING, SQUASHED, SQUASHING]
-    burn: [BURN, BURNS, BURNT, BURNED, BURNING, SCALD, SCALDED, SCALDING, FLASH]
-    puncture: [PUNCTURE, PUNCTURED, NEEDLESTICK, NEEDLE, STABBED, STAB]
-    laceration: [LACERATION, LACERATIONS, LACERATED, CUT, CUTS, GASH, GASHED, WOUND]
-    foreign_body: [FOREIGN BODY, SPLINTER, SPLINTERS, PARTICLE, PARTICLES, GRIT, SWARF]
-    sprain: [SPRAIN, SPRAINED, SPRAINS, SPRAINING]
-    strain: [STRAIN, STRAINED, STRAINS, STRAINING]
-    contusion: [CONTUSION, CONTUSIONS, BRUISE, BRUISED, BRUISES, BRUISING]
-  injury_cause:
-    caught_in: [CAUGHT, JAMMED, TRAPPED, PINCHED]
-    slip_fall: [SLIPPED, SLIP, SLIPPING, FELL, FALL, TRIPPED, TRIP, TRIPPING, STUMBLED, LOST FOOTING, LOST BALANCE]
-    struck_by: [STRUCK, HIT, BUMPED, KNOCKED, BANGED]
-    lifting: [LIFTING, LIFTED, LIFT, CARRYING, CARRIED, PUSHING, PUSHED, PULLING, LOADING, UNLOADING]
-    repetitive: [REPETITIVE, REPETITION, REPEATED, OVERUSE, CONSTANT, TYPING, KEYBOARD]
-
-# Phase 2: exploratory analysis (src/analysis/eda.py). Uses training claims only, except
-# the trend-over-time section, which shows every accident year to describe the drift.
-eda:
-  min_group_size: 100 # smallest group eligible to be called "most expensive"
-  adjuster_tolerance: 0.25 # initial estimate "close" if within +/-25% of the ultimate cost
-  adjuster_large_miss_factor: 2.0 # "large miss" if off by more than 2x in either direction
-  hexbin_gridsize: 60
-  weak_correlation: 0.10 # |rank correlation| below this is described as weak
-  common_values_shown: 3 # most common initial-estimate values quoted in the text
-  label_collision_gap: 0.05 # skip end labels closer than this share of the y-range
-  # Claim-mix controls for the mix-adjusted cost index. Wages are deliberately excluded:
-  # they rise with inflation, so controlling for them would hide the price change.
-  index_controls: [injury_nature, body_part, injury_cause, age_band, part_time]
-
 # Phase 1: deterministic cleaning rules (src/data/clean.py).
 # Every threshold is fixed here in advance; nothing is learned from the data, so the same
 # rules apply to new claims at prediction time. Invalid values become NaN and are imputed
@@ -166,6 +95,195 @@ cleaning:
     nominal_initial_estimate_max: 1
     long_report_delay_days: 365
   examples_per_rule: 5 # sample affected rows shown in the data quality report
+
+split:
+  date_column: accident_date
+  # The most recent 20% of claims by accident date form the final test set, used once at the end.
+  test_fraction: 0.20
+  # Time-ordered cross-validation inside the training period (Phase 4): each fold trains on
+  # earlier accident dates and validates on the block that follows, like the final test.
+  cv_folds: 5
+
+# A claim is "high cost" if its ultimate cost is at or above this quantile of the TRAINING
+# target. The same cutoff is applied to the test set (Phase 6); EDA uses it too.
+labels:
+  high_cost_quantile: 0.90
+
+# Phase 3: engineered features (src/features/tabular.py, build.py).
+features:
+  # Band edges for grouped features. Bands include their lower edge; the last band is open.
+  age_band_edges: [0, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65]
+  wage_band_edges: [0, 200, 300, 400, 500, 750, 1000, 1500]
+  delay_band_edges: [0, 8, 15, 31, 61, 91, 181, 366] # days from accident to report
+  dependents_cap: 3 # 3 or more dependents are grouped together
+  # Night shift: accident hour after 20 or before 6. Accidents recorded at exactly 00:00 are
+  # treated as "time unknown" (see the data quality report) and are NOT counted as night shift.
+  night_after_hour: 20
+  night_before_hour: 6
+  weekend_days: [5, 6] # pandas weekday numbers (Monday = 0): Saturday and Sunday
+  min_hours_for_rate: 1.0 # hours are clipped up to this before computing the hourly wage
+  # Initial-estimate values that behave like placeholders. Evidence: reports/features.md.
+  initial_default_values: [500]
+  # Missing hours, days and wages are imputed with the median of the claimant's
+  # part-time / full-time group, learned on training rows only, plus a missing indicator.
+  impute_group: part_time
+  impute_columns: [weekly_wages, hours_per_week, days_per_week]
+  missing_indicator_suffix: _was_missing
+  # Model inputs by preprocessing branch. Logical names are resolved to source columns.
+  numeric: # median-imputed, then standardised
+    - age
+    - dependent_children
+    - dependents_other
+    - total_dependents
+    - hours_per_week
+    - days_per_week
+    - hours_per_day
+    - accident_year
+    - accident_hour
+    - log_weekly_wages
+    - log_initial_estimate
+  log_numeric: # right-skewed: median-imputed, log1p, then standardised
+    - report_delay_days
+    - hourly_wage
+    - initial_to_wage_ratio
+  binary: # 0/1 flags, passed through unchanged
+    - is_weekend
+    - is_night_shift
+    - accident_time_unknown
+    - is_part_time
+    - wage_is_default
+    - initial_is_default
+    - initial_is_nominal
+    - weekly_wages_was_missing
+    - hours_per_week_was_missing
+    - days_per_week_was_missing
+  categorical: [gender, marital_status, age_band, accident_month, accident_weekday] # one-hot
+  text_rule_categorical: [body_part, injury_nature, injury_cause] # one-hot (Layer 1)
+  text_rule_numeric: [num_body_parts_mentioned, description_length] # standardised (Layer 1)
+  onehot_min_frequency: 20 # rarer categories are grouped into one "infrequent" column
+
+# Which description features the model sees. Switched off one at a time for the Phase 5 ablation.
+text_layers:
+  rules: true # Layer 1: keyword taxonomy
+  tfidf_svd: true # Layer 2: TF-IDF + truncated SVD
+  embedding_clusters: true # Layer 3: sentence-embedding clusters
+
+# Layer 1: keyword taxonomy for ClaimDescription (src/features/text_rules.py). Keywords match
+# whole words. For injury_nature and injury_cause the categories are in PRIORITY order: when a
+# description matches several, the first listed wins (natures are ordered roughly by
+# severity). For body_part, one distinct part gives that part and two or more give "multiple".
+text_rules:
+  other_label: other
+  multiple_label: multiple
+  multiple_keywords: [MULTIPLE]
+  # child: parent. When both are mentioned, only the child counts ("HAND ... FINGER" -> finger),
+  # so "multiple" means separate areas of the body, not a part and its location.
+  body_part_parents:
+    finger: hand
+  body_part:
+    back: [BACK, LUMBAR, SPINE, SPINAL, COCCYX, TAILBONE, TAIL BONE, DISC, VERTEBRA, VERTEBRAE, SCIATICA]
+    knee: [KNEE, KNEES, KNEECAP, PATELLA, MENISCUS]
+    shoulder: [SHOULDER, SHOULDERS, ROTATOR, CLAVICLE, COLLARBONE]
+    hand: [HAND, HANDS, PALM, KNUCKLE, KNUCKLES]
+    finger: [FINGER, FINGERS, THUMB, THUMBS, FINGERTIP, FINGERNAIL]
+    wrist: [WRIST, WRISTS, CARPAL]
+    arm: [ARM, ARMS, FOREARM, FOREARMS, ELBOW, ELBOWS, BICEP, BICEPS, TRICEP]
+    leg: [LEG, LEGS, THIGH, THIGHS, SHIN, SHINS, CALF, CALVES, HIP, HIPS, HAMSTRING]
+    foot: [FOOT, FEET, TOE, TOES, HEEL, HEELS, INSTEP]
+    ankle: [ANKLE, ANKLES, ACHILLES]
+    eye: [EYE, EYES, CORNEA, CORNEAL, EYELID, RETINA, CONJUNCTIVITIS]
+    head: [HEAD, FACE, FACIAL, FOREHEAD, SKULL, SCALP, NOSE, LIP, LIPS, MOUTH, TEETH, TOOTH, JAW, EAR, EARS, CHEEK, CHIN, CONCUSSION]
+    neck: [NECK, WHIPLASH, CERVICAL]
+    trunk: [CHEST, RIB, RIBS, ABDOMEN, ABDOMINAL, STOMACH, GROIN, INGUINAL, PELVIS, BUTTOCK, BUTTOCKS, TORSO]
+  injury_nature:
+    amputation: [AMPUTATION, AMPUTATED, SEVERED]
+    fracture: [FRACTURE, FRACTURED, FRACTURES, BROKEN, BROKE, DISLOCATION, DISLOCATED]
+    crush: [CRUSH, CRUSHED, CRUSHING, SQUASHED, SQUASHING]
+    burn: [BURN, BURNS, BURNT, BURNED, BURNING, SCALD, SCALDED, SCALDING, FLASH]
+    puncture: [PUNCTURE, PUNCTURED, NEEDLESTICK, NEEDLE, STABBED, STAB, PENETRATING]
+    laceration: [LACERATION, LACERATIONS, LACERATED, CUT, CUTS, GASH, GASHED, WOUND, ABRASION, ABRASIONS, GRAZE, GRAZED]
+    foreign_body: [FOREIGN BODY, SPLINTER, SPLINTERS, PARTICLE, PARTICLES, GRIT, SWARF]
+    hernia: [HERNIA, HERNIAS]
+    inflammation: [SYNOVITIS, TENOSYNOVITIS, TENDONITIS, TENDINITIS, EPICONDYLITIS, BURSITIS, INFLAMMATION, INFLAMED, CARPAL TUNNEL, CARPEL TUNNEL, TENNIS ELBOW]
+    sprain: [SPRAIN, SPRAINED, SPRAINS, SPRAINING, LIGAMENT, LIGAMENTS, TORN CARTILAGE]
+    strain: [STRAIN, STRAINED, STRAINS, STRAINING, WHIPLASH, MUSCLE, MUSCLES]
+    contusion: [CONTUSION, CONTUSIONS, BRUISE, BRUISED, BRUISES, BRUISING]
+    infection: [INFECTION, INFECTIONS, INFECTED]
+    psychological: [STRESS, ANXIETY, DEPRESSION, DEPRESSED, PSYCHOLOGICAL]
+    bite_sting: [BITE, BITES, BITTEN, STING, STUNG]
+    dermatitis: [DERMATITIS, RASH, ALLERGIC, ALLERGY, ECZEMA]
+    soft_tissue: [SOFT TISSUE]
+    pain: [PAIN, PAINS, SORE, ACHE, ACHING]
+  injury_cause:
+    caught_in: [CAUGHT, JAMMED, TRAPPED, PINCHED]
+    vehicle: [MOTOR VEHICLE, VEHICLE ACCIDENT, CAR ACCIDENT, TRUCK ACCIDENT, COLLISION, MVA, REAR ENDED, ROLLED VEHICLE]
+    assault: [ASSAULT, ASSAULTED, PUNCHED, KICKED, ATTACKED]
+    slip_fall: [SLIPPED, SLIP, SLIPPING, FELL, FALL, TRIPPED, TRIP, TRIPPING, STUMBLED, LOST FOOTING, LOST BALANCE]
+    struck_by: [STRUCK, HIT, BUMPED, KNOCKED, BANGED, DROPPED]
+    repetitive: [REPETITIVE, REPETITION, REPEATED, OVERUSE, CONSTANT, TYPING, KEYBOARD]
+    lifting: [LIFTING, LIFTED, LIFT, CARRYING, CARRIED, PUSHING, PUSHED, PULLING, LOADING, UNLOADING]
+    bending_twisting: [BENDING, BENT, TWISTING, TWISTED, REACHING, TURNED, TURNING, STRETCHING, SQUATTING, KNEELING]
+    tool_use: [KNIFE, KNIVES, GRINDING, GRINDER, CUTTING, SAW, BANDSAW, BLADE, DRILL, DRILLING, WELDING, WELDER, SLICER, SLICING, HAMMER, CHISEL, LATHE, SCISSORS, NEEDLE, NEEDLESTICK, SYRINGE]
+    exposure: [HOT, CHEMICAL, CHEMICALS, SPLASHED, FUMES, STEAM, ELECTRIC, ELECTRICAL, SHOCK, NOISE, DUST]
+    animal_insect: [SPIDER, REDBACK, DOG, INSECT, SNAKE, BEE, WASP]
+  unmatched_examples: 10 # sample unmatched descriptions shown per field in features.md
+
+# Layer 2: TF-IDF on words and word pairs, compressed with truncated SVD (fit on training rows).
+tfidf:
+  ngram_range: [1, 2]
+  min_df: 5 # ignore terms in fewer than 5 training descriptions
+  sublinear_tf: true
+  svd_components: 20
+  components_shown: 5 # SVD components described in features.md
+  top_terms_shown: 6
+
+# Layer 3: sentence embeddings (pretrained, no fitting) clustered with KMeans on training rows.
+embeddings:
+  model_name: sentence-transformers/all-MiniLM-L6-v2
+  batch_size: 256
+  k_candidates: [4, 6, 8, 10, 12, 15, 20, 25]
+  min_useful_k: 10 # manual read: smaller k merges claim types with very different costs
+  silhouette_sample: 10000 # silhouette is O(n^2), so it is computed on a random sample
+  kmeans_n_init: 10
+  # Chosen in Phase 3. Silhouette is flat and low for every k >= 10, so it cannot decide; k = 15
+  # is a local peak there and gives clusters that each read as one kind of claim, splitting
+  # groups with very different costs that smaller k merges (e.g. knee vs ankle, two eye types).
+  n_clusters: 15
+  # Human-readable name -> anchor description near that cluster's centre. Names follow the
+  # anchors (whichever cluster an anchor falls in gets its name), so they survive renumbering.
+  cluster_names:
+    "Finger cuts and caught fingers": "STRUCK METAL LACERATED LEFT INDEX FINGER"
+    "Lifting: lower back strain": "LIFTING LOWER BACK STRAIN"
+    "Trips and falls with bruising": "TRIPPED AND FELL ON HAND BRUISED RIGHT HAND"
+    "Lifting: shoulder and arm strain": "LIFTING RIGHT SHOULDER STRAIN"
+    "Knife cuts": "STRUCK KNIFE LACERATED LEFT FINGER"
+    "Back strain, no lifting mentioned": "STRAINED LOWER BACK"
+    "Wrist and forearm injuries": "FRACTURED LEFT WRIST"
+    "Slips on wet floors and stairs": "SLIPPED ON WET FLOOR SPRAINED RIGHT KNEE AND SHOULDER"
+    "Knee injuries": "TWISTED KNEE RIGHT KNEE INJURY"
+    "Punctures and mixed wounds": "STEPPED ON NAIL PUNCTURE WOUND RIGHT FOOT"
+    "Neck and shoulder strain, incl. vehicle accidents": "MOTOR VEHICLE ACCIDENT NECK AND SHOULDER STRAIN"
+    "Eye: foreign body from grinding": "GRINDING FOREIGN BODY FOREIGN BODY LEFT EYE"
+    "Eye: corneal abrasion and irritation": "STEEL STRUCK EYE LEFT CORNEAL ABRASION"
+    "Ankle sprains": "SPRAINED LEFT ANKLE"
+    "Burns": "BURNED HOT WATER BURN RIGHT HAND"
+  examples_per_cluster: 6
+  top_words_per_cluster: 8
+  min_word_count: 30 # a word needs this many training occurrences to be a cluster top word
+
+# Phase 2: exploratory analysis (src/analysis/eda.py). Uses training claims only, except
+# the trend-over-time section, which shows every accident year to describe the drift.
+eda:
+  min_group_size: 100 # smallest group eligible to be called "most expensive"
+  adjuster_tolerance: 0.25 # initial estimate "close" if within +/-25% of the ultimate cost
+  adjuster_large_miss_factor: 2.0 # "large miss" if off by more than 2x in either direction
+  hexbin_gridsize: 60
+  weak_correlation: 0.10 # |rank correlation| below this is described as weak
+  common_values_shown: 3 # most common initial-estimate values quoted in the text
+  label_collision_gap: 0.05 # skip end labels closer than this share of the y-range
+  # Claim-mix controls for the mix-adjusted cost index. Wages are deliberately excluded:
+  # they rise with inflation, so controlling for them would hide the price change.
+  index_controls: [injury_nature, body_part, injury_cause, age_band, part_time]
 
 reporting:
   target_percentiles: [0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 0.999]

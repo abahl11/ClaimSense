@@ -35,55 +35,71 @@ Injury types come from the rule-based keyword taxonomy on the claim description 
 
 ![Injury nature](figures/eda_injury_nature.png)
 
-**Takeaway.** **Strain** is both the most frequent injury nature (26% of claims) and the most expensive by median (median 6,082, 2.2x the overall median of 2,819). **Strain** carries the largest share of total cost (41%). At the other end, **foreign body** claims have a median of only 364.
+**Takeaway.** The most frequent injury nature is **strain** (27% of claims, median 6,010), but the most expensive is **psychological** (median 18,745, 6.6x the overall median of 2,819). Frequency and severity rank differently. **Strain** carries the largest share of total cost (41%). At the other end, **foreign body** claims have a median of only 364.
 
 | Injury nature   |   Claims | Share of claims   |   Median cost |   Mean cost | Share of total cost   | High-cost rate   |
 |:----------------|---------:|:------------------|--------------:|------------:|:----------------------|:-----------------|
-| strain          |    11255 | 26.1%             |         6,082 |      13,030 | 40.5%                 | 15.1%            |
-| laceration      |     8610 | 19.9%             |           685 |       3,018 | 7.2%                  | 2.9%             |
-| contusion       |     2670 | 6.2%              |         1,321 |       4,970 | 3.7%                  | 5.5%             |
-| foreign body    |     2507 | 5.8%              |           364 |       1,394 | 1.0%                  | 1.2%             |
-| fracture        |     2336 | 5.4%              |         3,405 |       9,836 | 6.3%                  | 13.8%            |
-| sprain          |     1904 | 4.4%              |         2,959 |       7,675 | 4.0%                  | 9.1%             |
+| strain          |    11675 | 27.0%             |         6,010 |      12,773 | 41.2%                 | 14.7%            |
+| laceration      |     9054 | 21.0%             |           694 |       3,112 | 7.8%                  | 3.1%             |
+| contusion       |     2547 | 5.9%              |         1,304 |       4,843 | 3.4%                  | 5.3%             |
+| foreign body    |     2462 | 5.7%              |           364 |       1,407 | 1.0%                  | 1.3%             |
+| fracture        |     2405 | 5.6%              |         3,486 |       9,891 | 6.6%                  | 13.9%            |
+| sprain          |     2155 | 5.0%              |         3,049 |       8,134 | 4.8%                  | 10.1%            |
 | burn            |     1298 | 3.0%              |           707 |       2,925 | 1.0%                  | 3.2%             |
-| crush           |      870 | 2.0%              |         2,260 |       7,124 | 1.7%                  | 10.3%            |
-| puncture        |      657 | 1.5%              |         1,129 |       4,562 | 0.8%                  | 5.3%             |
-| other           |    11093 | 25.7%             |         4,241 |      11,008 | 33.7%                 | 13.8%            |
+| inflammation    |     1076 | 2.5%              |         3,739 |       9,865 | 2.9%                  | 14.1%            |
+| soft tissue     |     1045 | 2.4%              |         5,411 |      15,371 | 4.4%                  | 14.7%            |
+| pain            |     1013 | 2.3%              |         6,457 |      14,728 | 4.1%                  | 16.4%            |
+| crush           |      865 | 2.0%              |         2,215 |       7,097 | 1.7%                  | 10.2%            |
+| puncture        |      857 | 2.0%              |         1,231 |       4,703 | 1.1%                  | 5.4%             |
+| infection       |      261 | 0.6%              |         1,449 |       6,249 | 0.5%                  | 8.4%             |
+| hernia          |      186 | 0.4%              |        10,492 |      16,825 | 0.9%                  | 26.3%            |
+| bite sting      |      181 | 0.4%              |         1,509 |       5,028 | 0.3%                  | 7.2%             |
+| psychological   |      145 | 0.3%              |        18,745 |      28,670 | 1.1%                  | 57.2%            |
+| dermatitis      |      119 | 0.3%              |         2,048 |       7,095 | 0.2%                  | 11.8%            |
+| amputation      |       84 | 0.2%              |         2,771 |       9,548 | 0.2%                  | 20.2%            |
+| other           |     5772 | 13.4%             |         3,867 |      10,508 | 16.8%                 | 13.2%            |
 
 ### Body part
 
 ![Body part](figures/eda_body_part.png)
 
-**Takeaway.** The most frequent body part is **multiple** (25% of claims, median 2,379), but the most expensive is **back** (median 6,562, 2.3x the overall median of 2,819). Frequency and severity rank differently. **Back** carries the largest share of total cost (33%). At the other end, **eye** claims have a median of only 396.
+**Takeaway.** The most frequent body part is **multiple** (23% of claims, median 2,845), but the most expensive is **back** (median 6,578, 2.3x the overall median of 2,819). Frequency and severity rank differently. **Back** carries the largest share of total cost (33%). At the other end, **eye** claims have a median of only 396.
 
 | Body part   |   Claims | Share of claims   |   Median cost |   Mean cost | Share of total cost   | High-cost rate   |
 |:------------|---------:|:------------------|--------------:|------------:|:----------------------|:-----------------|
-| multiple    |    10925 | 25.3%             |         2,379 |       7,684 | 23.2%                 | 9.6%             |
-| back        |     8303 | 19.2%             |         6,562 |      14,285 | 32.8%                 | 15.5%            |
-| finger      |     5356 | 12.4%             |           712 |       3,465 | 5.1%                  | 4.0%             |
-| eye         |     3258 | 7.5%              |           396 |       1,465 | 1.3%                  | 1.3%             |
-| hand        |     2397 | 5.5%              |         1,032 |       5,180 | 3.4%                  | 5.1%             |
-| shoulder    |     1935 | 4.5%              |         5,512 |      12,941 | 6.9%                  | 16.7%            |
-| arm         |     1893 | 4.4%              |         2,219 |       7,499 | 3.9%                  | 9.1%             |
-| knee        |     1833 | 4.2%              |         4,214 |      12,610 | 6.4%                  | 16.6%            |
-| foot        |     1281 | 3.0%              |         2,007 |       7,275 | 2.6%                  | 8.3%             |
-| ankle       |     1131 | 2.6%              |         2,295 |       6,091 | 1.9%                  | 8.2%             |
-| wrist       |     1120 | 2.6%              |         2,985 |       9,083 | 2.8%                  | 12.9%            |
-| leg         |      850 | 2.0%              |         1,540 |       5,770 | 1.4%                  | 7.9%             |
-| head        |      804 | 1.9%              |         1,707 |       7,466 | 1.7%                  | 7.6%             |
-| neck        |      656 | 1.5%              |         4,918 |      10,518 | 1.9%                  | 11.9%            |
-| other       |     1458 | 3.4%              |         3,827 |      11,840 | 4.8%                  | 17.4%            |
+| multiple    |    10123 | 23.4%             |         2,845 |       8,216 | 23.0%                 | 10.2%            |
+| back        |     8213 | 19.0%             |         6,578 |      14,343 | 32.5%                 | 15.6%            |
+| finger      |     6544 | 15.1%             |           700 |       3,413 | 6.2%                  | 3.9%             |
+| eye         |     3254 | 7.5%              |           396 |       1,466 | 1.3%                  | 1.3%             |
+| hand        |     2375 | 5.5%              |         1,026 |       5,201 | 3.4%                  | 5.1%             |
+| shoulder    |     1910 | 4.4%              |         5,503 |      12,935 | 6.8%                  | 16.8%            |
+| arm         |     1841 | 4.3%              |         2,210 |       7,571 | 3.8%                  | 9.3%             |
+| knee        |     1807 | 4.2%              |         4,241 |      12,473 | 6.2%                  | 16.7%            |
+| foot        |     1274 | 2.9%              |         2,003 |       7,301 | 2.6%                  | 8.3%             |
+| ankle       |     1125 | 2.6%              |         2,276 |       6,034 | 1.9%                  | 8.2%             |
+| wrist       |     1105 | 2.6%              |         3,007 |       9,169 | 2.8%                  | 13.0%            |
+| head        |      773 | 1.8%              |         1,673 |       7,594 | 1.6%                  | 7.5%             |
+| leg         |      755 | 1.7%              |         1,527 |       5,747 | 1.2%                  | 8.3%             |
+| neck        |      646 | 1.5%              |         4,918 |      10,528 | 1.9%                  | 11.9%            |
+| trunk       |      491 | 1.1%              |         4,421 |      10,708 | 1.5%                  | 14.3%            |
+| other       |      964 | 2.2%              |         3,613 |      12,449 | 3.3%                  | 19.0%            |
 
 ### Injury cause
 
-| Injury cause   |   Claims | Share of claims   |   Median cost |   Mean cost | Share of total cost   | High-cost rate   |
-|:---------------|---------:|:------------------|--------------:|------------:|:----------------------|:-----------------|
-| slip fall      |     9342 | 21.6%             |         3,197 |       9,309 | 24.0%                 | 11.3%            |
-| lifting        |     7551 | 17.5%             |         6,245 |      13,015 | 27.1%                 | 14.8%            |
-| struck by      |     6716 | 15.5%             |           829 |       4,412 | 8.2%                  | 5.0%             |
-| caught in      |     2236 | 5.2%              |         1,770 |       6,900 | 4.3%                  | 9.0%             |
-| repetitive     |      735 | 1.7%              |         6,897 |      15,278 | 3.1%                  | 22.3%            |
-| other          |    16620 | 38.5%             |         1,926 |       7,255 | 33.3%                 | 8.7%             |
+| Injury cause     |   Claims | Share of claims   |   Median cost |   Mean cost | Share of total cost   | High-cost rate   |
+|:-----------------|---------:|:------------------|--------------:|------------:|:----------------------|:-----------------|
+| slip fall        |     9335 | 21.6%             |         3,195 |       9,311 | 24.0%                 | 11.3%            |
+| lifting          |     7440 | 17.2%             |         6,233 |      12,994 | 26.7%                 | 14.7%            |
+| struck by        |     6813 | 15.8%             |           827 |       4,356 | 8.2%                  | 5.1%             |
+| tool use         |     3157 | 7.3%              |           641 |       3,161 | 2.8%                  | 3.1%             |
+| caught in        |     2236 | 5.2%              |         1,770 |       6,900 | 4.3%                  | 9.0%             |
+| bending twisting |     1341 | 3.1%              |         5,158 |      10,623 | 3.9%                  | 13.3%            |
+| exposure         |     1027 | 2.4%              |           689 |       3,209 | 0.9%                  | 3.2%             |
+| vehicle          |      870 | 2.0%              |         5,716 |      14,653 | 3.5%                  | 14.9%            |
+| repetitive       |      845 | 2.0%              |         6,988 |      15,175 | 3.5%                  | 21.9%            |
+| animal insect    |      432 | 1.0%              |         2,119 |       6,427 | 0.8%                  | 7.4%             |
+| assault          |      114 | 0.3%              |         2,967 |      12,737 | 0.4%                  | 13.2%            |
+| other            |     9590 | 22.2%             |         2,472 |       7,933 | 21.0%                 | 9.9%             |
 
 ## 3. Cost vs reporting delay
 
@@ -190,27 +206,27 @@ Costs can rise because the same injury costs more (price change, which needs tre
 |            1988 |    3,023 |         2,569 |       6,273 |               1.00 |           1.00 |                        1.36 |
 |            1989 |    2,977 |         2,213 |       6,331 |               0.90 |           0.91 |                        1.44 |
 |            1990 |    2,971 |         2,044 |       5,542 |               0.83 |           0.86 |                        1.34 |
-|            1991 |    2,973 |         2,429 |       6,292 |               0.94 |           0.93 |                        1.39 |
-|            1992 |    3,022 |         2,789 |       7,285 |               1.05 |           1.05 |                        1.38 |
+|            1991 |    2,973 |         2,429 |       6,292 |               0.94 |           0.94 |                        1.39 |
+|            1992 |    3,022 |         2,789 |       7,285 |               1.05 |           1.04 |                        1.38 |
 |            1993 |    3,003 |         3,173 |       7,737 |               1.18 |           1.13 |                        1.15 |
-|            1994 |    2,981 |         2,998 |       7,847 |               1.17 |           1.25 |                        1.03 |
-|            1995 |    2,983 |         1,758 |       5,959 |               0.73 |           0.88 |                        1.00 |
-|            1996 |    3,034 |         1,998 |       6,220 |               0.78 |           0.93 |                        0.92 |
-|            1997 |    3,031 |         2,268 |       7,064 |               0.88 |           1.05 |                        0.90 |
-|            1998 |    2,964 |         3,160 |       7,927 |               0.98 |           1.16 |                        0.86 |
-|            1999 |    2,999 |         3,643 |       9,415 |               1.15 |           1.26 |                        0.88 |
-|            2000 |    2,993 |         4,950 |      13,639 |               1.51 |           1.58 |                        0.89 |
-|            2001 |    3,028 |         6,015 |      16,106 |               1.92 |           1.96 |                        0.95 |
+|            1994 |    2,981 |         2,998 |       7,847 |               1.17 |           1.28 |                        1.03 |
+|            1995 |    2,983 |         1,758 |       5,959 |               0.73 |           0.89 |                        1.00 |
+|            1996 |    3,034 |         1,998 |       6,220 |               0.78 |           0.96 |                        0.92 |
+|            1997 |    3,031 |         2,268 |       7,064 |               0.88 |           1.06 |                        0.90 |
+|            1998 |    2,964 |         3,160 |       7,927 |               0.98 |           1.17 |                        0.86 |
+|            1999 |    2,999 |         3,643 |       9,415 |               1.15 |           1.28 |                        0.88 |
+|            2000 |    2,993 |         4,950 |      13,639 |               1.51 |           1.60 |                        0.89 |
+|            2001 |    3,028 |         6,015 |      16,106 |               1.92 |           1.97 |                        0.95 |
 |            2002 |    3,011 |         6,530 |      16,793 |               2.22 |           2.35 |                        0.96 |
-|            2003 |    2,978 |         6,732 |      17,764 |               2.33 |           2.54 |                        0.99 |
-|            2004 |    3,032 |         8,189 |      22,339 |               2.95 |           2.99 |                        1.05 |
+|            2003 |    2,978 |         6,732 |      17,764 |               2.33 |           2.53 |                        0.99 |
+|            2004 |    3,032 |         8,189 |      22,339 |               2.95 |           3.00 |                        1.05 |
 |            2005 |    2,997 |         9,408 |      27,354 |               3.57 |           3.63 |                        1.21 |
 
 ## Key findings
 
 1. **Adjusters' initial estimates are informative but imprecise.** The typical estimate is off by a factor of 1.52, only 32% are within ±25%, and 32% of eventual high-cost claims did not have a top-10% initial estimate.
-2. **Injury nature.** **Strain** is both the most frequent injury nature (26% of claims) and the most expensive by median (median 6,082, 2.2x the overall median of 2,819). **Strain** carries the largest share of total cost (41%). At the other end, **foreign body** claims have a median of only 364.
-3. **Body part.** The most frequent body part is **multiple** (25% of claims, median 2,379), but the most expensive is **back** (median 6,562, 2.3x the overall median of 2,819). Frequency and severity rank differently. **Back** carries the largest share of total cost (33%). At the other end, **eye** claims have a median of only 396.
+2. **Injury nature.** The most frequent injury nature is **strain** (27% of claims, median 6,010), but the most expensive is **psychological** (median 18,745, 6.6x the overall median of 2,819). Frequency and severity rank differently. **Strain** carries the largest share of total cost (41%). At the other end, **foreign body** claims have a median of only 364.
+3. **Body part.** The most frequent body part is **multiple** (23% of claims, median 2,845), but the most expensive is **back** (median 6,578, 2.3x the overall median of 2,819). Frequency and severity rank differently. **Back** carries the largest share of total cost (33%). At the other end, **eye** claims have a median of only 396.
 4. **Reporting delay matters mainly at the extremes.** The relationship is not a straight line. Median cost is 1,913 for claims reported in under a week, peaks at 3,095 for 15-30 days, eases off, then jumps to 6,183 for the 0.7% of claims reported after more than a year. The high-cost rate climbs more steadily, from 7% to 27%. The overall rank correlation is weak (0.03) because the effect sits in the tails, which a tree model can pick up but a single linear term would miss.
 5. **Claimant characteristics.** Median cost ranges by age band from 1,124 (<20) to 5,242 (60-64), 4.7x; by weekly wage band from 1,448 (200-300) to 8,120 (1,500+), 5.6x; by part-time / full-time from 2,750 (full-time) to 3,520 (part-time), 1.3x; by total dependents from 2,762 (0) to 3,686 (1), 1.3x. The widest spreads are by weekly wage band (5.6x) and age band (4.7x); the narrowest by total dependents (1.3x) and part-time / full-time (1.3x).
 6. **Costs rise over time.** Claim counts are flat (about 3,000 a year), but costs are not: the median rises from 2,569 in 1988 to 9,408 in 2005 (3.7x) and the mean from 6,273 to 27,354.
@@ -221,6 +237,6 @@ Costs can rise because the same injury costs more (price change, which needs tre
 
 - **Validation mirrors deployment.** Median cost grows 3.7x across the period and the rise is mostly a price-level change, so model choices are made with time-ordered cross-validation inside the training period (train on earlier years, validate on later ones), never on the test set.
 - **Three ways to handle price drift are compared in Phase 5:** (A) predict log cost directly; (B) predict the log ratio of ultimate cost to the initial estimate, which is recorded at current prices; (C) deflate costs with a trend fitted on training years, then re-inflate predictions. The winner is chosen by cross-validation and all three are reported on the test set.
-- **Text features earn their place.** Median cost differs 16.7x between the cheapest and dearest injury natures (groups with enough claims), information that exists only in the free-text description.
+- **Text features earn their place.** Median cost differs 51.5x between the cheapest and dearest injury natures (groups with enough claims), information that exists only in the free-text description.
 - **Non-linear effects favour tree models.** Delay has a rank correlation of only 0.03 with cost, yet the longest-delay band has 3.2x the median cost of the shortest. Effects concentrated in the tails like this are captured by gradient-boosted trees without hand-made thresholds.
 - **Recording defaults get indicator features** (default wages, 00:00 accident times), as planned in the data quality report.

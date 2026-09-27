@@ -18,6 +18,18 @@ import pandas as pd
 from matplotlib.axes import Axes
 from sklearn.linear_model import LinearRegression
 
+from src.analysis.summaries import (
+    CLAIMS,
+    COST_SHARE,
+    HIGH_RATE,
+    MEAN,
+    MEDIAN,
+    SHARE,
+    group_summary,
+    order_by_count,
+    readable,
+    summary_table,
+)
 from src.config import Config
 from src.data.load import load_clean
 from src.features.tabular import (
@@ -34,17 +46,18 @@ from src.reporting.outputs import (
     GENERATED_NOTE,
     figure_markdown,
     markdown_table,
-    percent_columns,
     write_json,
     write_text,
 )
 from src.reporting.plots import (
+    hbar,
     new_figure,
     percent_axis,
     save_figure,
     sequential_cmap,
     series_color,
     thousands_axis,
+    vbar,
     year_axis,
 )
 
@@ -54,13 +67,6 @@ YEAR = "accident_year"
 DELAY = "report_delay_days"
 RATIO = "ultimate_to_initial"
 IS_TEST = "is_test_period"
-CLAIMS = "Claims"
-SHARE = "Share of claims"
-MEDIAN = "Median cost"
-MEAN = "Mean cost"
-COST_SHARE = "Share of total cost"
-HIGH_RATE = "High-cost rate"
-SHARE_COLUMNS = [SHARE, COST_SHARE, HIGH_RATE]
 MAX_FLAT_TICKS = 6  # more tick labels than this are rotated so they do not overlap
 NEGLIGIBLE_SHARE = 0.05  # a share of growth below this is described as "essentially none"
 
@@ -120,85 +126,6 @@ def load_eda_data(cfg: Config) -> EdaData:
     threshold = float(train[target].quantile(cfg["labels"]["high_cost_quantile"]))
     logger.info("EDA on %d training claims (cutoff %s)", len(train), cutoff)
     return EdaData(claims, train, cutoff, threshold, target, cfg.col("initial_estimate"))
-
-
-def resolve_column(name: str, cfg: Config) -> str:
-    """Map a logical source-column name to its real name; derived names pass through."""
-    return cfg.col(name) if name in cfg["data"]["columns"] else name
-
-
-def group_summary(df: pd.DataFrame, by: str, target: str, threshold: float) -> pd.DataFrame:
-    """Claim count, cost statistics and high-cost rate for each group of ``by``."""
-    flagged = df.assign(_high=df[target] >= threshold)
-    grouped = flagged.groupby(by, observed=True)
-    summary = pd.DataFrame(
-        {
-            CLAIMS: grouped.size(),
-            SHARE: grouped.size() / len(df),
-            MEDIAN: grouped[target].median(),
-            MEAN: grouped[target].mean(),
-            COST_SHARE: grouped[target].sum() / df[target].sum(),
-            HIGH_RATE: grouped["_high"].mean(),
-        }
-    )
-    return summary.rename_axis(by).reset_index()
-
-
-def order_by_count(summary: pd.DataFrame, by: str, other_label: str) -> pd.DataFrame:
-    """Sort groups by claim count, keeping the catch-all ``other`` group last."""
-    is_other = summary[by] == other_label
-    ordered = summary[~is_other].sort_values(CLAIMS, ascending=False)
-    return pd.concat([ordered, summary[is_other]], ignore_index=True)
-
-
-def readable(values: pd.Series) -> pd.Series:
-    """Turn snake_case category labels into plain words for charts and tables."""
-    return values.astype(str).str.replace("_", " ")
-
-
-def summary_table(summary: pd.DataFrame, by: str, label: str) -> str:
-    """Markdown table of a group summary with percentages formatted."""
-    table = percent_columns(summary, SHARE_COLUMNS).rename(columns={by: label})
-    table[label] = readable(table[label])
-    return markdown_table(table, floatfmt=",.0f")
-
-
-# ---------------------------------------------------------------------------
-# Plot helpers
-# ---------------------------------------------------------------------------
-
-
-def hbar(ax: Axes, values: pd.Series, labels: pd.Series, fmt: str, cfg: Config) -> None:
-    """Horizontal bars in the first series colour with the value at each bar tip."""
-    p = cfg["plots"]
-    y = np.arange(len(values))
-    ax.barh(y, values.to_numpy(), height=0.6, color=series_color(cfg, 0))
-    for yi, value in zip(y, values, strict=True):
-        ax.text(value, yi, " " + fmt.format(value), va="center", color=p["ink_secondary"])
-    ax.set_yticks(y, labels.tolist())
-    ax.set_xlim(0, values.max() * 1.22)
-    ax.grid(axis="y", visible=False)
-    ax.grid(axis="x", visible=True)
-    ax.spines["left"].set_visible(True)
-    ax.tick_params(axis="x", labelbottom=False, length=0)
-
-
-def vbar(ax: Axes, labels: pd.Series, values: pd.Series, fmt: str, cfg: Config) -> None:
-    """Vertical bars in the first series colour with the value on each bar cap."""
-    p = cfg["plots"]
-    x = np.arange(len(values))
-    ax.bar(x, values.to_numpy(), width=0.6, color=series_color(cfg, 0))
-    for xi, value in zip(x, values, strict=True):
-        ax.text(
-            xi,
-            value,
-            fmt.format(value),
-            ha="center",
-            va="bottom",
-            color=p["ink_secondary"],
-            fontsize=p["font_size"] - 2,
-        )
-    ax.set_xticks(x, labels.tolist())
 
 
 def fractional_year(timestamp: pd.Timestamp) -> float:
@@ -410,7 +337,7 @@ def plot_category(summary: pd.DataFrame, by: str, title: str, cfg: Config, name:
     """Paired horizontal bars: share of claims and median cost, in the same order."""
     fig, (ax_share, ax_cost) = new_figure(cfg, ncols=2, sharey=True)
     labels = readable(summary[by])
-    hbar(ax_share, summary[SHARE], labels, "{:.0%}", cfg)
+    hbar(ax_share, summary[SHARE], labels, "{:.1%}", cfg)
     hbar(ax_cost, summary[MEDIAN], labels, "{:,.0f}", cfg)
     ax_share.invert_yaxis()
     ax_share.set_title(f"{title}: share of training claims")
@@ -831,7 +758,7 @@ def trend_section(data: EdaData, cfg: Config) -> Section:
         "most expensive part of the data, so a model trained on earlier years risks "
         "under-predicting it unless it is anchored to current prices."
     )
-    controls = [resolve_column(name, cfg) for name in cfg["eda"]["index_controls"]]
+    controls = cfg.resolve(cfg["eda"]["index_controls"])
     index = pd.DataFrame(
         {
             "Raw (all claims)": cost_index(data.claims, data.target, []),

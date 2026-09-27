@@ -16,144 +16,194 @@
   },
   "injury_nature": {
     "strain": {
-      "Claims": 11255,
-      "Median cost": 6082.478421,
-      "Mean cost": 13030.345421655353
+      "Claims": 11675,
+      "Median cost": 6010.077622,
+      "Mean cost": 12772.825549497944
     },
     "laceration": {
-      "Claims": 8610,
-      "Median cost": 685.1981712500001,
-      "Mean cost": 3018.073447696167
+      "Claims": 9054,
+      "Median cost": 694.4554157,
+      "Mean cost": 3111.997989387044
     },
     "contusion": {
-      "Claims": 2670,
-      "Median cost": 1320.859991,
-      "Mean cost": 4969.585898918277
+      "Claims": 2547,
+      "Median cost": 1303.587528,
+      "Mean cost": 4842.646704426424
     },
     "foreign_body": {
-      "Claims": 2507,
-      "Median cost": 363.7121541,
-      "Mean cost": 1393.9332374254489
+      "Claims": 2462,
+      "Median cost": 363.82877499999995,
+      "Mean cost": 1406.9324945884646
     },
     "fracture": {
-      "Claims": 2336,
-      "Median cost": 3405.456626,
-      "Mean cost": 9836.366375571833
+      "Claims": 2405,
+      "Median cost": 3485.551583,
+      "Mean cost": 9890.904187034554
     },
     "sprain": {
-      "Claims": 1904,
-      "Median cost": 2958.8359140000002,
-      "Mean cost": 7675.088888344642
+      "Claims": 2155,
+      "Median cost": 3048.579835,
+      "Mean cost": 8134.318264103758
     },
     "burn": {
       "Claims": 1298,
       "Median cost": 706.54520225,
       "Mean cost": 2924.5832034452237
     },
+    "inflammation": {
+      "Claims": 1076,
+      "Median cost": 3739.034882,
+      "Mean cost": 9864.701974325
+    },
+    "soft_tissue": {
+      "Claims": 1045,
+      "Median cost": 5411.211477000001,
+      "Mean cost": 15370.832276961819
+    },
+    "pain": {
+      "Claims": 1013,
+      "Median cost": 6456.963731,
+      "Mean cost": 14728.417263515597
+    },
     "crush": {
-      "Claims": 870,
-      "Median cost": 2260.0956725,
-      "Mean cost": 7123.934647207586
+      "Claims": 865,
+      "Median cost": 2214.540715,
+      "Mean cost": 7096.6748316618505
     },
     "puncture": {
-      "Claims": 657,
-      "Median cost": 1128.7707380000002,
-      "Mean cost": 4561.815708475647
+      "Claims": 857,
+      "Median cost": 1231.37876,
+      "Mean cost": 4703.227245922403
+    },
+    "infection": {
+      "Claims": 261,
+      "Median cost": 1448.979645,
+      "Mean cost": 6249.351144028736
+    },
+    "hernia": {
+      "Claims": 186,
+      "Median cost": 10491.55983,
+      "Mean cost": 16824.682676915054
+    },
+    "bite_sting": {
+      "Claims": 181,
+      "Median cost": 1508.637751,
+      "Mean cost": 5028.2478164016575
+    },
+    "psychological": {
+      "Claims": 145,
+      "Median cost": 18745.4393,
+      "Mean cost": 28670.48960164138
+    },
+    "dermatitis": {
+      "Claims": 119,
+      "Median cost": 2048.001561,
+      "Mean cost": 7094.5556196016805
+    },
+    "amputation": {
+      "Claims": 84,
+      "Median cost": 2771.0410455,
+      "Mean cost": 9548.349094144049
     },
     "other": {
-      "Claims": 11093,
-      "Median cost": 4241.366595,
-      "Mean cost": 11008.381695801281
+      "Claims": 5772,
+      "Median cost": 3866.5342845,
+      "Mean cost": 10508.21184743581
     }
   },
-  "nature_median_spread": 16.723330118156202,
+  "nature_median_spread": 51.522695806564506,
   "body_part": {
     "multiple": {
-      "Claims": 10925,
-      "Median cost": 2378.614161,
-      "Mean cost": 7683.573945997236
+      "Claims": 10123,
+      "Median cost": 2844.563682,
+      "Mean cost": 8216.280936961988
     },
     "back": {
-      "Claims": 8303,
-      "Median cost": 6561.725163,
-      "Mean cost": 14285.05563972716
+      "Claims": 8213,
+      "Median cost": 6577.867169,
+      "Mean cost": 14342.831403773445
     },
     "finger": {
-      "Claims": 5356,
-      "Median cost": 711.8420486,
-      "Mean cost": 3465.3899889157206
+      "Claims": 6544,
+      "Median cost": 699.9924131,
+      "Mean cost": 3413.2415798652814
     },
     "eye": {
-      "Claims": 3258,
+      "Claims": 3254,
       "Median cost": 396.40119875,
-      "Mean cost": 1465.2460303742787
+      "Mean cost": 1466.3259813830978
     },
     "hand": {
-      "Claims": 2397,
-      "Median cost": 1032.066152,
-      "Mean cost": 5180.374871843638
+      "Claims": 2375,
+      "Median cost": 1025.582811,
+      "Mean cost": 5200.87062290939
     },
     "shoulder": {
-      "Claims": 1935,
-      "Median cost": 5511.845763,
-      "Mean cost": 12940.541005533953
+      "Claims": 1910,
+      "Median cost": 5503.492275500001,
+      "Mean cost": 12935.015247785394
     },
     "arm": {
-      "Claims": 1893,
-      "Median cost": 2218.967877,
-      "Mean cost": 7499.193239205494
+      "Claims": 1841,
+      "Median cost": 2209.566753,
+      "Mean cost": 7570.874798911189
     },
     "knee": {
-      "Claims": 1833,
-      "Median cost": 4213.516341,
-      "Mean cost": 12610.036714380796
+      "Claims": 1807,
+      "Median cost": 4241.025313,
+      "Mean cost": 12473.129606991255
     },
     "foot": {
-      "Claims": 1281,
-      "Median cost": 2006.512516,
-      "Mean cost": 7275.049314683997
+      "Claims": 1274,
+      "Median cost": 2003.259732,
+      "Mean cost": 7301.275529405023
     },
     "ankle": {
-      "Claims": 1131,
-      "Median cost": 2295.400623,
-      "Mean cost": 6090.548776332273
+      "Claims": 1125,
+      "Median cost": 2276.422767,
+      "Mean cost": 6033.536055762489
     },
     "wrist": {
-      "Claims": 1120,
-      "Median cost": 2984.653058,
-      "Mean cost": 9082.629690211876
-    },
-    "leg": {
-      "Claims": 850,
-      "Median cost": 1540.4795795,
-      "Mean cost": 5770.006253562353
+      "Claims": 1105,
+      "Median cost": 3006.943976,
+      "Mean cost": 9168.989671120544
     },
     "head": {
-      "Claims": 804,
-      "Median cost": 1707.2966529999999,
-      "Mean cost": 7466.258983075746
+      "Claims": 773,
+      "Median cost": 1672.9226609999998,
+      "Mean cost": 7594.499097793015
+    },
+    "leg": {
+      "Claims": 755,
+      "Median cost": 1526.870851,
+      "Mean cost": 5747.246509956556
     },
     "neck": {
-      "Claims": 656,
+      "Claims": 646,
       "Median cost": 4917.8910805,
-      "Mean cost": 10517.550982530487
+      "Mean cost": 10527.502348416254
+    },
+    "trunk": {
+      "Claims": 491,
+      "Median cost": 4421.095073,
+      "Mean cost": 10708.025404495724
     },
     "other": {
-      "Claims": 1458,
-      "Median cost": 3826.792261,
-      "Mean cost": 11840.024774287378
+      "Claims": 964,
+      "Median cost": 3613.0935204999996,
+      "Mean cost": 12448.786686833402
     }
   },
-  "body_part_median_spread": 16.55324248183798,
+  "body_part_median_spread": 16.593963867269967,
   "delay_spearman": 0.03262003837391016,
   "delay_last_to_first_median": 3.2325849937921576,
   "claimant_max_spread": 5.608082461262173,
   "yearly_median_growth": 3.661953131103728,
   "cost_index_last_year": {
     "Raw (all claims)": 3.5700133309367734,
-    "Mix-adjusted": 3.628295808995782
+    "Mix-adjusted": 3.6267721232123407
   },
-  "mix_share_of_growth": -0.012725227311320086,
+  "mix_share_of_growth": -0.012395160025401308,
   "anchor_growth_last_year": {
     "Ultimate cost": 3.661953131103728,
     "Initial estimate": 4.75,

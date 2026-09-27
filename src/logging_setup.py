@@ -29,3 +29,5 @@ def setup_logging(cfg: Config, level: str | None = None) -> None:
         handlers=handlers,
         force=True,
     )
+    for name in log_cfg.get("quiet_loggers", []):
+        logging.getLogger(name).setLevel(logging.WARNING)
