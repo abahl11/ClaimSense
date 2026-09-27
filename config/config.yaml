@@ -21,6 +21,19 @@ paths:
   eda_metrics: reports/metrics/eda.json
   features_report: reports/features.md
   features_metrics: reports/metrics/features.json
+  regression_model: models/regression_model.joblib
+  classifier_model: models/classifier_model.joblib
+  validation_metrics: reports/metrics/validation.json
+  regression_metrics: reports/metrics/regression.json
+  best_params: reports/metrics/best_params.json
+  classifier_metrics: reports/metrics/classifier.json
+  explainability_metrics: reports/metrics/explainability.json
+  fairness_metrics: reports/metrics/fairness.json
+  results_report: reports/results.md
+  explainability_report: reports/explainability.md
+  model_card: reports/model_card.md
+  interview_prep: reports/resume_and_interview_prep.md
+  readme: README.md
   log_file: logs/pipeline.log
 
 logging:
@@ -103,8 +116,8 @@ split:
   # Time-ordered cross-validation inside the training period (Phase 4): each fold trains on
   # earlier accident dates and validates on the block that follows, like the final test.
   cv_folds: 5
-  # The most recent share of a training set, used to estimate quantities that must be
-  # measured out of time: the smearing factor (Phase 5) and probability calibration (Phase 6).
+  # The most recent share of a training set, used to calibrate the high-cost probabilities
+  # and set the review threshold out of time (Phase 6).
   inner_holdout_fraction: 0.20
 
 # A claim is "high cost" if its ultimate cost is at or above this quantile of the TRAINING
@@ -273,6 +286,106 @@ embeddings:
   examples_per_cluster: 6
   top_words_per_cluster: 8
   min_word_count: 30 # a word needs this many training occurrences to be a cluster top word
+
+# Phase 4: evaluation settings shared by the regression and classification stages.
+evaluation:
+  # Model selection uses RMSE on the log scale: relative errors count equally for small and
+  # large claims, so a handful of huge claims cannot dominate the choice.
+  selection_metric: rmsle
+  n_deciles: 10 # predicted-cost deciles in the calibration table
+  review_capacities: [0.05, 0.10, 0.20] # shares of claims a review team could look at
+  review_capacity: 0.10 # the team reviews 10% of claims: sets the classifier threshold
+  reliability_bins: 10
+  largest_claim_quantiles: [0.90, 0.99] # "top 10%" and "top 1%" of actual cost (error analysis)
+  min_group_size: 100 # smallest group shown in grouped error tables
+
+# Phase 5: regression models (src/models/train_regression.py). All fits use random_seed.
+regression:
+  n_jobs: -1
+  lightgbm_common: { deterministic: true, force_col_wise: true, verbose: -1 }
+  ridge: { alpha: 1.0 }
+  random_forest: { n_estimators: 200, min_samples_leaf: 20, max_features: 0.3 }
+  lightgbm:
+    n_estimators: 600
+    learning_rate: 0.05
+    num_leaves: 31
+    min_child_samples: 50
+    subsample: 0.8
+    subsample_freq: 1
+    colsample_bytree: 0.8
+    reg_lambda: 1.0
+  tweedie_variance_powers: [1.5, 1.7, 1.9] # plus the Gamma loss (power 2)
+  # Price-drift approach C/D: log-linear cost trend fitted on the most recent training years,
+  # used to bring every claim to the price level of the latest training date and back.
+  trend_window_years: 5
+  # Ablation: a feature set with more text layers must beat a simpler one by more than this
+  # (CV RMSLE) to be preferred.
+  ablation_tolerance: 0.001
+  interval_quantiles: [0.1, 0.5, 0.9] # 80% prediction interval plus a median model
+  smearing_folds: 5 # out-of-fold residuals for the retransformation (smearing) factor
+
+# Phase 5: Optuna search for the chosen configuration (CV on training data only). One search
+# space per model family, so whichever family wins stage 1 can be tuned.
+tuning:
+  n_trials: 25
+  space: # [low, high]; rates, leaf sizes and penalties are searched on a log scale
+    lightgbm:
+      learning_rate: [0.02, 0.1]
+      n_estimators: [200, 1000]
+      num_leaves: [15, 63]
+      min_child_samples: [20, 300]
+      colsample_bytree: [0.4, 1.0]
+      subsample: [0.5, 1.0]
+      reg_lambda: [0.001, 10.0]
+    random_forest:
+      n_estimators: [100, 400]
+      min_samples_leaf: [5, 100]
+      max_features: [0.1, 0.6]
+    ridge:
+      alpha: [0.01, 100.0]
+
+# Phase 6: high-cost claim classifier (src/models/train_classifier.py).
+classifier:
+  logistic: { C: 1.0, max_iter: 3000 }
+  # LightGBM uses the default regression settings above, plus class weighting.
+  class_weighting: balanced # scale_pos_weight = negatives / positives in the training rows
+
+# Phase 7: explainability and fairness.
+explain:
+  shap_sample: 2000 # test claims explained with SHAP
+  shap_sample_forest: 200 # exact SHAP on deep random forests is slow, so fewer claims
+  top_features: 15
+  dependence_features: 4
+  example_quantiles: [0.10, 0.50, 0.95] # low, medium and high predicted-cost example claims
+  waterfall_features: 10
+fairness:
+  # Excluded: the with/without comparison (reports/explainability.md) showed no
+  # measurable accuracy benefit, below the pre-set negligible_rmsle_change.
+  exclude_gender: true
+  min_group_size: 30
+  negligible_rmsle_change: 0.002 # smaller CV RMSLE changes count as "no accuracy benefit"
+
+# Streamlit app (app/streamlit_app.py): example claim pre-filled in the form.
+app:
+  title: Workers' comp claim triage
+  top_drivers: 8
+  claim_id: NEW_CLAIM
+  limits: { age: [13, 90], dependents_max: 10 }
+  defaults:
+    accident_date: "2004-03-15"
+    accident_time: "10:00"
+    report_date: "2004-04-02"
+    age: 45
+    gender: M
+    marital_status: M
+    dependent_children: 0
+    dependents_other: 0
+    weekly_wages: 650.0
+    part_time: F
+    hours_per_week: 38.0
+    days_per_week: 5
+    description: "LIFTING HEAVY BOX STRAINED LOWER BACK"
+    initial_estimate: 5000
 
 # Phase 2: exploratory analysis (src/analysis/eda.py). Uses training claims only, except
 # the trend-over-time section, which shows every accident year to describe the drift.

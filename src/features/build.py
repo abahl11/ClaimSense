@@ -27,6 +27,12 @@ from src.features.tabular import FeatureEngineer, GroupMedianImputer
 from src.features.text_embed import embedding_clusters, tfidf_svd
 
 LAYERS = ("rules", "tfidf_svd", "embedding_clusters")
+# Output-column prefixes of each text layer (ColumnTransformer branch names).
+LAYER_PREFIXES = {
+    "rules": ("rules_categorical__", "rules_numeric__"),
+    "tfidf_svd": ("tfidf_svd__",),
+    "embedding_clusters": ("embedding_clusters__",),
+}
 
 
 def log1p_nonnegative(values: np.ndarray) -> np.ndarray:
@@ -155,3 +161,26 @@ def build_preprocessor(cfg: Config, layers: dict[str, bool] | None = None) -> Pi
 def feature_names(preprocessor: Pipeline) -> list[str]:
     """Output column names of a fitted preprocessor, e.g. ``numeric__Age``."""
     return list(preprocessor.named_steps["columns"].get_feature_names_out())
+
+
+def select_columns(
+    names: list[str], layers: dict[str, bool] | None = None, drop_prefixes: tuple[str, ...] = ()
+) -> np.ndarray:
+    """Positions of the output columns to keep for a text-layer subset.
+
+    Every ColumnTransformer branch is fit independently, so dropping a layer's columns from
+    the full matrix gives exactly the matrix a pipeline without that layer would produce.
+
+    Args:
+        names: Output column names of a fitted preprocessor.
+        layers: Layers to keep (missing keys count as kept). ``None`` keeps all layers.
+        drop_prefixes: Further column-name prefixes to drop, e.g. one feature's one-hot columns.
+
+    Returns:
+        Sorted column positions.
+    """
+    dropped = tuple(drop_prefixes)
+    for layer, keep in (layers or {}).items():
+        if not keep:
+            dropped += LAYER_PREFIXES[layer]
+    return np.array([i for i, name in enumerate(names) if not name.startswith(dropped)], dtype=int)

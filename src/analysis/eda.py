@@ -38,6 +38,7 @@ from src.features.tabular import (
     delay_band,
     delay_days,
     dependents_group,
+    fractional_years,
     wage_band,
 )
 from src.features.text_rules import BODY_PART, INJURY_CAUSE, INJURY_NATURE, extract_text_rules
@@ -130,8 +131,7 @@ def load_eda_data(cfg: Config) -> EdaData:
 
 def fractional_year(timestamp: pd.Timestamp) -> float:
     """Timestamp as a decimal year, e.g. 2002-07-02 -> about 2002.5."""
-    days = 366 if timestamp.is_leap_year else 365
-    return timestamp.year + (timestamp.dayofyear - 1) / days
+    return float(fractional_years(pd.Series([timestamp]))[0])
 
 
 def mark_test_period(ax: Axes, cutoff: pd.Timestamp, cfg: Config) -> None:

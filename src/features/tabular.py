@@ -53,6 +53,12 @@ def make_bands(values: pd.Series, edges: list[float], integer: bool = True) -> p
     return pd.cut(values, bins=bins, right=False, labels=band_labels(edges, integer))
 
 
+def fractional_years(dates: pd.Series) -> np.ndarray:
+    """Dates as decimal years, e.g. 2002-07-02 -> about 2002.5."""
+    days_in_year = np.where(dates.dt.is_leap_year, 366, 365)
+    return (dates.dt.year + (dates.dt.dayofyear - 1) / days_in_year).to_numpy(dtype=float)
+
+
 def accident_year(df: pd.DataFrame, cfg: Config) -> pd.Series:
     """Calendar year of the accident."""
     return df[cfg.col("accident_date")].dt.year.rename("accident_year")

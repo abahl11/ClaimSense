@@ -63,7 +63,8 @@ def regression_metrics(
 
     Returns:
         Log metrics plus ``mae``, ``rmse``, ``bias_ratio`` (total predicted / total actual)
-        and ``gamma_deviance`` (a relative-error score for mean predictions).
+        and ``gamma_deviance`` (a relative-error score for mean predictions), all on the
+        expected prediction, and ``mae_typical`` (MAE of the typical prediction).
     """
     y_true = np.asarray(y_true, dtype=float)
     y_expected = np.asarray(y_expected, dtype=float)
@@ -71,6 +72,7 @@ def regression_metrics(
     return {
         **log_metrics(y_true, y_typical),
         "mae": float(np.mean(np.abs(errors))),
+        "mae_typical": float(np.mean(np.abs(np.asarray(y_typical, dtype=float) - y_true))),
         "rmse": float(np.sqrt(np.mean(errors**2))),
         "bias_ratio": float(y_expected.sum() / y_true.sum()),
         "gamma_deviance": float(mean_gamma_deviance(y_true, np.clip(y_expected, 1e-9, None))),
