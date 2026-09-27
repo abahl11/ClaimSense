@@ -15,6 +15,8 @@ paths:
   clean_data: data/processed/claims_clean.parquet
   data_quality_report: reports/data_quality_report.md
   data_quality_metrics: reports/metrics/data_quality.json
+  eda_report: reports/eda.md
+  eda_metrics: reports/metrics/eda.json
   models_dir: models
   reports_dir: reports
   figures_dir: reports/figures
@@ -69,6 +71,71 @@ split:
   test_fraction: 0.20
   # K-fold cross-validation inside the training period for model selection and tuning.
   cv_folds: 5
+
+# A claim is "high cost" if its ultimate cost is at or above this quantile of the TRAINING
+# target. The same cutoff is applied to the test set (Phase 6); EDA uses it too.
+labels:
+  high_cost_quantile: 0.90
+
+# Band edges for grouped features. Bands include their lower edge; the last band is open.
+features:
+  age_band_edges: [0, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65]
+  wage_band_edges: [0, 200, 300, 400, 500, 750, 1000, 1500]
+  delay_band_edges: [0, 8, 15, 31, 61, 91, 181, 366] # days from accident to report
+  dependents_cap: 3 # 3 or more dependents are grouped together
+
+# Keyword taxonomy for ClaimDescription (src/features/text_rules.py). Keywords match whole
+# words. For injury_nature and injury_cause the categories are in PRIORITY order: when a
+# description matches several, the first listed wins (natures are ordered by severity).
+# For body_part, one match gives that part and two or more distinct parts give "multiple".
+text_rules:
+  other_label: other
+  multiple_label: multiple
+  multiple_keywords: [MULTIPLE]
+  body_part:
+    back: [BACK, LUMBAR, SPINE, SPINAL, COCCYX, DISC, VERTEBRA, VERTEBRAE, SCIATICA]
+    knee: [KNEE, KNEES, KNEECAP, PATELLA, MENISCUS]
+    shoulder: [SHOULDER, SHOULDERS, ROTATOR, CLAVICLE, COLLARBONE]
+    hand: [HAND, HANDS, PALM, KNUCKLE, KNUCKLES]
+    finger: [FINGER, FINGERS, THUMB, THUMBS, FINGERTIP, FINGERNAIL]
+    wrist: [WRIST, WRISTS, CARPAL]
+    arm: [ARM, ARMS, FOREARM, FOREARMS, ELBOW, ELBOWS, BICEP, BICEPS, TRICEP]
+    leg: [LEG, LEGS, THIGH, THIGHS, SHIN, SHINS, CALF, CALVES, HIP, HIPS, HAMSTRING]
+    foot: [FOOT, FEET, TOE, TOES, HEEL, HEELS, INSTEP]
+    ankle: [ANKLE, ANKLES, ACHILLES]
+    eye: [EYE, EYES, CORNEA, CORNEAL, EYELID, RETINA, CONJUNCTIVITIS]
+    head: [HEAD, FACE, FACIAL, FOREHEAD, SKULL, SCALP, NOSE, LIP, LIPS, MOUTH, TEETH, TOOTH, JAW, EAR, EARS, CHEEK, CHIN, CONCUSSION]
+    neck: [NECK, WHIPLASH, CERVICAL]
+  injury_nature:
+    fracture: [FRACTURE, FRACTURED, FRACTURES, BROKEN, BROKE]
+    crush: [CRUSH, CRUSHED, CRUSHING, SQUASHED, SQUASHING]
+    burn: [BURN, BURNS, BURNT, BURNED, BURNING, SCALD, SCALDED, SCALDING, FLASH]
+    puncture: [PUNCTURE, PUNCTURED, NEEDLESTICK, NEEDLE, STABBED, STAB]
+    laceration: [LACERATION, LACERATIONS, LACERATED, CUT, CUTS, GASH, GASHED, WOUND]
+    foreign_body: [FOREIGN BODY, SPLINTER, SPLINTERS, PARTICLE, PARTICLES, GRIT, SWARF]
+    sprain: [SPRAIN, SPRAINED, SPRAINS, SPRAINING]
+    strain: [STRAIN, STRAINED, STRAINS, STRAINING]
+    contusion: [CONTUSION, CONTUSIONS, BRUISE, BRUISED, BRUISES, BRUISING]
+  injury_cause:
+    caught_in: [CAUGHT, JAMMED, TRAPPED, PINCHED]
+    slip_fall: [SLIPPED, SLIP, SLIPPING, FELL, FALL, TRIPPED, TRIP, TRIPPING, STUMBLED, LOST FOOTING, LOST BALANCE]
+    struck_by: [STRUCK, HIT, BUMPED, KNOCKED, BANGED]
+    lifting: [LIFTING, LIFTED, LIFT, CARRYING, CARRIED, PUSHING, PUSHED, PULLING, LOADING, UNLOADING]
+    repetitive: [REPETITIVE, REPETITION, REPEATED, OVERUSE, CONSTANT, TYPING, KEYBOARD]
+
+# Phase 2: exploratory analysis (src/analysis/eda.py). Uses training claims only, except
+# the trend-over-time section, which shows every accident year to describe the drift.
+eda:
+  min_group_size: 100 # smallest group eligible to be called "most expensive"
+  adjuster_tolerance: 0.25 # initial estimate "close" if within +/-25% of the ultimate cost
+  adjuster_large_miss_factor: 2.0 # "large miss" if off by more than 2x in either direction
+  hexbin_gridsize: 60
+  weak_correlation: 0.10 # |rank correlation| below this is described as weak
+  common_values_shown: 3 # most common initial-estimate values quoted in the text
+  label_collision_gap: 0.05 # skip end labels closer than this share of the y-range
+  # Claim-mix controls for the mix-adjusted cost index. Wages are deliberately excluded:
+  # they rise with inflation, so controlling for them would hide the price change.
+  index_controls: [injury_nature, body_part, injury_cause, age_band, part_time]
 
 # Phase 1: deterministic cleaning rules (src/data/clean.py).
 # Every threshold is fixed here in advance; nothing is learned from the data, so the same
@@ -126,3 +193,5 @@ plots:
   baseline: "#c3c2b7"
   de_emphasis: "#c3c2b7"
   categorical: ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
+  # Single-hue blue ramp (light to dark) for magnitude, e.g. hexbin density.
+  sequential: ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]

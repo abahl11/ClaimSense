@@ -1,0 +1,166 @@
+{
+  "n_train": 43200,
+  "n_test": 10800,
+  "cutoff": "2002-05-29T09:00:00",
+  "high_cost_threshold": 16406.011376,
+  "adjuster": {
+    "median_ratio": 1.0675739849333334,
+    "median_abs_pct_error": 0.4068254693711134,
+    "typical_factor_off": 1.5157289655691515,
+    "share_within_tolerance": 0.31525462962962963,
+    "share_under_by_factor": 0.21638888888888888,
+    "share_over_by_factor": 0.05326388888888889,
+    "aggregate_coverage": 0.7001453959980765,
+    "spearman": 0.8701608670708494,
+    "high_cost_caught_by_initial": 0.6819444444444445
+  },
+  "injury_nature": {
+    "strain": {
+      "Claims": 11255,
+      "Median cost": 6082.478421,
+      "Mean cost": 13030.345421655353
+    },
+    "laceration": {
+      "Claims": 8610,
+      "Median cost": 685.1981712500001,
+      "Mean cost": 3018.073447696167
+    },
+    "contusion": {
+      "Claims": 2670,
+      "Median cost": 1320.859991,
+      "Mean cost": 4969.585898918277
+    },
+    "foreign_body": {
+      "Claims": 2507,
+      "Median cost": 363.7121541,
+      "Mean cost": 1393.9332374254489
+    },
+    "fracture": {
+      "Claims": 2336,
+      "Median cost": 3405.456626,
+      "Mean cost": 9836.366375571833
+    },
+    "sprain": {
+      "Claims": 1904,
+      "Median cost": 2958.8359140000002,
+      "Mean cost": 7675.088888344642
+    },
+    "burn": {
+      "Claims": 1298,
+      "Median cost": 706.54520225,
+      "Mean cost": 2924.5832034452237
+    },
+    "crush": {
+      "Claims": 870,
+      "Median cost": 2260.0956725,
+      "Mean cost": 7123.934647207586
+    },
+    "puncture": {
+      "Claims": 657,
+      "Median cost": 1128.7707380000002,
+      "Mean cost": 4561.815708475647
+    },
+    "other": {
+      "Claims": 11093,
+      "Median cost": 4241.366595,
+      "Mean cost": 11008.381695801281
+    }
+  },
+  "nature_median_spread": 16.723330118156202,
+  "body_part": {
+    "multiple": {
+      "Claims": 10925,
+      "Median cost": 2378.614161,
+      "Mean cost": 7683.573945997236
+    },
+    "back": {
+      "Claims": 8303,
+      "Median cost": 6561.725163,
+      "Mean cost": 14285.05563972716
+    },
+    "finger": {
+      "Claims": 5356,
+      "Median cost": 711.8420486,
+      "Mean cost": 3465.3899889157206
+    },
+    "eye": {
+      "Claims": 3258,
+      "Median cost": 396.40119875,
+      "Mean cost": 1465.2460303742787
+    },
+    "hand": {
+      "Claims": 2397,
+      "Median cost": 1032.066152,
+      "Mean cost": 5180.374871843638
+    },
+    "shoulder": {
+      "Claims": 1935,
+      "Median cost": 5511.845763,
+      "Mean cost": 12940.541005533953
+    },
+    "arm": {
+      "Claims": 1893,
+      "Median cost": 2218.967877,
+      "Mean cost": 7499.193239205494
+    },
+    "knee": {
+      "Claims": 1833,
+      "Median cost": 4213.516341,
+      "Mean cost": 12610.036714380796
+    },
+    "foot": {
+      "Claims": 1281,
+      "Median cost": 2006.512516,
+      "Mean cost": 7275.049314683997
+    },
+    "ankle": {
+      "Claims": 1131,
+      "Median cost": 2295.400623,
+      "Mean cost": 6090.548776332273
+    },
+    "wrist": {
+      "Claims": 1120,
+      "Median cost": 2984.653058,
+      "Mean cost": 9082.629690211876
+    },
+    "leg": {
+      "Claims": 850,
+      "Median cost": 1540.4795795,
+      "Mean cost": 5770.006253562353
+    },
+    "head": {
+      "Claims": 804,
+      "Median cost": 1707.2966529999999,
+      "Mean cost": 7466.258983075746
+    },
+    "neck": {
+      "Claims": 656,
+      "Median cost": 4917.8910805,
+      "Mean cost": 10517.550982530487
+    },
+    "other": {
+      "Claims": 1458,
+      "Median cost": 3826.792261,
+      "Mean cost": 11840.024774287378
+    }
+  },
+  "body_part_median_spread": 16.55324248183798,
+  "delay_spearman": 0.03262003837391016,
+  "delay_last_to_first_median": 3.2325849937921576,
+  "claimant_max_spread": 5.608082461262173,
+  "yearly_median_growth": 3.661953131103728,
+  "cost_index_last_year": {
+    "Raw (all claims)": 3.5700133309367734,
+    "Mix-adjusted": 3.628295808995782
+  },
+  "mix_share_of_growth": -0.012725227311320086,
+  "anchor_growth_last_year": {
+    "Ultimate cost": 3.661953131103728,
+    "Initial estimate": 4.75,
+    "Weekly wage (defaults excluded)": 1.8929834222119173
+  },
+  "ratio_median_by_period": {
+    "train": 1.0675739849333334,
+    "test": 1.0498729520454546
+  }
+}

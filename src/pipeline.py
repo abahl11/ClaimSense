@@ -13,6 +13,7 @@ import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from src.analysis.eda import run_eda
 from src.config import Config, load_config
 from src.data.clean import clean_claims, save_clean
 from src.data.load import load_raw
@@ -43,7 +44,7 @@ def _planned(stage: str, phase: int) -> StageFn:
 STAGES: dict[str, StageFn] = {
     "validate": run_validation,
     "clean": run_clean,
-    "eda": _planned("eda", 2),
+    "eda": run_eda,
     "features": _planned("features", 3),
     "train_reg": _planned("train_reg", 5),
     "train_clf": _planned("train_clf", 6),
