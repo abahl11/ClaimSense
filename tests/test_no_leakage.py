@@ -71,3 +71,26 @@ def test_kmeans_is_fit_on_training_descriptions_only(cfg, small_claims, fake_emb
     fitted_texts = set(fake_embeddings[0])
     assert fitted_texts == set(train[cfg.col("description")])
     assert fitted_texts.isdisjoint(test[cfg.col("description")])
+
+
+def test_high_cost_threshold_uses_training_rows_only(cfg, small_claims):
+    from src.models.train_classifier import cost_threshold, labels
+
+    target = cfg.col("target")
+    claims = small_claims.copy()
+    claims.loc[:, target] = np.arange(1, len(claims) + 1) * 100.0
+    train, test = split_small(claims)
+    test.loc[:, target] = test[target] * 100  # a much pricier future must not move the cutoff
+    threshold = cost_threshold(train, cfg)
+    quantile = cfg["labels"]["high_cost_quantile"]
+    assert threshold == pytest.approx(np.quantile(train[target], quantile))
+    assert labels(test, threshold, cfg).mean() > labels(train, threshold, cfg).mean()
+
+
+def test_relative_label_is_computed_within_each_year(cfg, small_claims):
+    from src.models.train_classifier import relative_labels
+
+    claims = small_claims.copy()
+    claims.loc[:, cfg.col("target")] = np.arange(1, len(claims) + 1) * 100.0
+    flagged = relative_labels(claims, cfg)
+    assert 0 < flagged.mean() <= 1 - cfg["labels"]["high_cost_quantile"] + 0.05
