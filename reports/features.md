@@ -45,8 +45,6 @@ Every model input, grouped by how the pipeline preprocesses it. Statistics are o
 | num_body_parts_mentioned   | text rules (L1) | Distinct body parts mentioned (after the finger/hand rule).             | More injured areas usually means more treatment.                                                                             | 0.0%                        |                     |
 | description_length         | text rules (L1) | Characters in the description.                                          | Longer descriptions can signal more complex injuries.                                                                        | 0.0%                        |                     |
 
-Text layers 2 and 3 add **20 TF-IDF/SVD components** and a **one-hot embedding cluster** (k = 15); see sections 4 and 5.
-
 ## 2. Which initial estimates behave like placeholders?
 
 Adjusters often enter round numbers (EDA section 1), so a natural idea is to flag round estimates as unreliable. The table tests that on training claims: a flag is only useful if flagged estimates are further from the final cost (higher error).
@@ -59,13 +57,17 @@ Adjusters often enter round numbers (EDA section 1), so a natural idea is to fla
 
 Round numbers in general are *not* less accurate, so a 'round number' flag would add noise. Only the most common single value is clearly worse than the rest, so the `initial_is_default` flag covers exactly the configured value(s).
 
-## 3. Layer 1: keyword taxonomy
+## 3. Keyword taxonomy
 
 Rules in `src/features/text_rules.py`; keyword lists in `config/config.yaml`. Keywords match whole words. For nature and cause the categories are in priority order, so a description mentioning both a laceration and a fracture is labelled a fracture. A finger mentioned together with its hand counts as a finger, so *multiple* means separate areas of the body.
 
 The dictionaries started from the categories in the project brief and were extended by reading unmatched descriptions: foreign body, hernia, inflammation, infection, soft tissue, psychological, bite/sting, dermatitis, amputation and pain were added to nature; vehicle, assault, bending/twisting, tool use, exposure and animal/insect to cause; trunk to body part. Descriptions that name an injury but not how it happened (for example 'STRAIN LOWER BACK') legitimately stay *other* for cause.
 
 **Coverage on training claims**
+
+![Keyword taxonomy coverage](figures/features_taxonomy_coverage.png)
+
+**Takeaway.** The rules label 98% of descriptions for body part but only 78% for injury cause; the rest stay *other*. Cause is the hardest field because many descriptions name the injury but not how it happened, which no keyword list can fix.
 
 | Field         | Labelled (not 'other')   |
 |:--------------|:-------------------------|
@@ -174,231 +176,24 @@ Sample of descriptions still labelled *other*:
 - `GETTING OUT FROM TRUCK CAB SPRAINED LEFT ANKLE AND LEG`
 - `WHILE DEALING CARDS RIGHT TENDON SYNOVITIS RIGHT WRIST`
 
-## 4. Layer 2: TF-IDF + truncated SVD
+## 4. Model matrix
 
-TF-IDF over words and word pairs (n-grams (1, 2), terms in at least 5 training descriptions) gives a vocabulary of **6,952 terms**. Truncated SVD compresses it to 20 dense components that together keep **18% of the TF-IDF variance**. This captures wording the fixed keyword lists miss, at a size tree models handle easily. Both steps are fit inside the pipeline, so the vocabulary never includes words seen only in the test period.
+With the keyword-rule features switched on, the fitted pipeline turns each claim into **109 columns**:
 
-| Component   | Strongest terms                                             |
-|:------------|:------------------------------------------------------------|
-| svd0        | back, strain, lower back, lower, back strain, lifting       |
-| svd1        | left, right, finger, foreign, body, foreign body            |
-| svd2        | foreign, foreign body, body, eye, finger, right eye         |
-| svd3        | right, shoulder, finger, knee, knife, right shoulder        |
-| svd4        | left, right, finger, left wrist, lacerated right, lacerated |
+| Branch            |   Columns |
+|:------------------|----------:|
+| rules_categorical |        47 |
+| categorical       |        36 |
+| numeric           |        11 |
+| binary            |        10 |
+| log               |         3 |
+| rules_numeric     |         2 |
 
-## 5. Layer 3: sentence-embedding clusters
+The `text_layers.rules` switch removes the keyword-rule columns for the Phase 5 ablation. The target (`UltimateIncurredClaimCost`) is not among the 34 input columns the pipeline reads, a check that also runs in the test suite.
 
-Each description is embedded with the pretrained `sentence-transformers/all-MiniLM-L6-v2` model (384 numbers per description, cached in `data/processed`). The model is never trained on our data, so embedding cannot leak information. KMeans then groups training descriptions by meaning, and the cluster id becomes a one-hot feature. Only KMeans learns, and inside the pipeline it is fit on training rows only.
+## 5. Leakage safeguards
 
-**Choosing k.** Silhouette measures how much closer each description is to its own cluster than to the next one. On short, overlapping texts it is low for every k, so it is a guide, not a verdict; the final choice also depends on whether each cluster reads as one recognisable kind of claim.
-
-![Silhouette by k](figures/features_silhouette.png)
-
-**Takeaway.** Silhouette scores range from 0.063 to 0.105, peaking at k = 4. Scores this low are typical for short free-text descriptions, whose topics overlap. The chosen k = 15 scores 0.066.
-
-|   k |   Silhouette |   Inertia |
-|----:|-------------:|----------:|
-|   4 |       0.1050 |    23,912 |
-|   6 |       0.0905 |    22,714 |
-|   8 |       0.0770 |    22,008 |
-|  10 |       0.0722 |    21,458 |
-|  12 |       0.0625 |    21,004 |
-|  15 |       0.0664 |    20,410 |
-|  20 |       0.0659 |    19,645 |
-|  25 |       0.0669 |    19,007 |
-
-**Chosen k = 15.** Reading the clusters showed that k below 10 merges kinds of claim with very different costs (for example knee injuries with ankle sprains), so only k >= 10 was considered. Across those values silhouette only moves between 0.063 and 0.072, too little to decide on its own; k = 15 is a local peak in that range and gives clusters that each read as one kind of claim. Names were written by reading the descriptions closest to each cluster centre (listed below) and its most over-represented words. Each name is tied in the config to an anchor description rather than a cluster number, so it follows the meaning.
-
-![Embedding clusters](figures/features_embedding_clusters.png)
-
-**Takeaway.** The largest cluster, **Finger cuts and caught fingers**, holds 12% of training claims. Median cost runs from 332 (**Eye: foreign body from grinding**) to 6,669 (**Lifting: lower back strain**), a 20.1x spread, so the clusters separate cheap and expensive kinds of claim.
-
-### Cluster 7: Finger cuts and caught fingers
-
-5,147 training claims (11.9%), median cost 801. Most over-represented words: RING, LITTLE, INDEX, FINGER, CAUGHT, BETWEEN, MIDDLE, LACERATED.
-
-- `STRUCK WITH PIECE OF METAL LACERATED LEFT INDEX FINGER`
-- `STRUCK PIECE OF METAL LACERATED LEFT MIDDLE FINGER`
-- `STRUCK PIECE OF STEEL LACERATED LEFT INDEX FINGER`
-- `STRUCK METAL LACERATED LEFT MIDDLE FINGER`
-- `STRUCK METAL CORNER LACERATED RIGHT HAND INDEX FINGER`
-- `STRUCK METAL LACERATED RIGHT MIDDLE FINGER`
-
-### Cluster 2: Lifting: lower back strain
-
-4,719 training claims (10.9%), median cost 6,669. Most over-represented words: LIFTING, HEAVY, LOWER, BACK, STRAIN, UPPER, PAIN, STRAINED.
-
-- `LIFTING LOWER BACK STRAIN`
-- `LIFTING STRAIN LOWER BACK STRAIN`
-- `LIFTING BACK STRAIN LOWER BACK STRAIN`
-- `LIFTING UPPER BACK STRAIN`
-- `LIFTING BACK STRAIN`
-- `LIFTING BACK BACK STRAIN`
-
-### Cluster 0: Trips and falls with bruising
-
-4,323 training claims (10.0%), median cost 2,086. Most over-represented words: BRUISED, HEAD, FALLING, TRIPPED, HIT, FELL, FOOT, OVER.
-
-- `TRIPPED AND FELL ON HAND BRUISED RIGHT HAND`
-- `FELL OFF LADDER HIT ANKLE BRUISED RIGHT HAND`
-- `FELL OVER BRUISED HAND AND RIGHT LEG BEHIND RIGHT KNEE`
-- `BEAM FELL AND HIT HAND BRUISED RIGHT KNEE HEAD AND LEG`
-- `TRIPPED AND FELL ONTO FOOT BRUISED RIGHT ELBOW`
-- `FRAME FELL AND HIT HAND BRUISED RIGHT FOOT`
-
-### Cluster 9: Lifting: shoulder and arm strain
-
-3,445 training claims (8.0%), median cost 5,011. Most over-represented words: SHOULDER, PALLET, MUSCLE, STRAINED, FOREARM, ARM, LIFTING, STEEL.
-
-- `LIFTING RIGHT SHOULDER STRAIN`
-- `LIFTING STRAINED RIGHT SHOULDER AND HAND INJURY`
-- `HEAVY LIFTING LEFT SHOULDER STRAIN`
-- `LEFT ARM STRAIN LEFT SHOULDER`
-- `LIFTING RESIDENT STRAINED LEFT ARM STRAIN LEFT SHOULDER`
-- `LIFTING STEEL STRAINED RIGHT SHOULDER`
-
-### Cluster 3: Knife cuts
-
-3,419 training claims (7.9%), median cost 565. Most over-represented words: KNIFE, CUTTING, BLADE, CUT, WITH, FACE, LACERATION, INDEX.
-
-- `KNIFE CUT FINGER LACERATED LEFT HAND`
-- `STRUCK WITH KNIFE CUT FINGER LACERATED TIP OF LEFT INDEX FINGER`
-- `STRUCK KNIFE LACERATION LEFT FINGER`
-- `STRUCK KNIFE LACERATION THUMB FINGER LEFT HAND`
-- `STRUCK KNIFE LACERATED LEFT FINGER`
-- `STRUCK WITH KNIFE LACERATED LEFT INDEX FINGER HAND`
-
-### Cluster 10: Back strain, no lifting mentioned
-
-3,298 training claims (7.6%), median cost 6,578. Most over-represented words: BENDING, PAIN, LOWER, BACK, TWISTED, UPPER, OVER, STRAIN.
-
-- `LOWER BACK STRAINED BACK`
-- `LOWER BACK STRAIN`
-- `LOWER BACK STRAINED LOWER BACK STRAIN`
-- `LOWER BACK STRAIN LOWER BACK`
-- `STRAINED LOWER BACK`
-- `FELL OVER STRAINED LOWER BACK STRAIN`
-
-### Cluster 4: Wrist and forearm injuries
-
-3,134 training claims (7.3%), median cost 2,364. Most over-represented words: DEALING, CARDS, SYNOVITIS, USE, TENDON, WRIST, JAMMED, WOUND.
-
-- `REPETITIVE USE OF RIGHT ARM FRACTURED RIGHT WRIST`
-- `FRACTURED LEFT WRIST`
-- `HURT RIGHT WRIST AND HAND RIGHT HAND`
-- `HAND CAUGHT ARM FRACTURE RIGHT HAND`
-- `SLIPPED HIT ARM LEFT ARM TO ARM AND WRIST`
-- `LACERATED RIGHT WRIST INJURY RIGHT THUMB`
-
-### Cluster 1: Slips on wet floors and stairs
-
-2,718 training claims (6.3%), median cost 4,221. Most over-represented words: WET, ROLLER, TENDONITIS, STAIRS, FLOOR, SLIPPED, DOWN, ON.
-
-- `SLIPPED AND FELL ON FLOOR STRAIN BACK RIGHT SHOULDER`
-- `SLIPPED AND FELL ON FLOOR STRAIN RIGHT SHOULDER`
-- `SLIPPED ON WET FLOOR SPRAINED RIGHT KNEE AND SHOULDER`
-- `SLIPPED ON WET FLOOR LEFT KNEE AND SHOULDER`
-- `SLIPPED AND FELL INJURED RIGHT KNEE`
-- `SLIPPED AND FELL TO FLOOR SPRAINED BACK`
-
-### Cluster 6: Knee injuries
-
-2,165 training claims (5.0%), median cost 4,603. Most over-represented words: KNEE, AIR, HOSE, TWISTED, USING, LADDER, TISSUE, SOFT.
-
-- `LANDED ON KNEE SNAPPED RIGHT KNEE STRAIN`
-- `FELL OVER TWISTED KNEE STRAINED RIGHT KNEE`
-- `RIGHT KNEE INJURY`
-- `TWISTED KNEE RIGHT KNEE INJURY`
-- `STRAINED RIGHT KNEE RIGHT KNEE`
-- `FELL AND TWISTED KNEE RIGHT KNEE INJURY`
-
-### Cluster 8: Punctures and mixed wounds
-
-2,161 training claims (5.0%), median cost 1,749. Most over-represented words: INSTRUMENTS, REDBACK, PAINTING, PREPARING, BITE, SPIDER, PENETRATING, FOR.
-
-- `ARM WENT THROUGH FINGER PUNCTURED WOUND LEFT LEG`
-- `CAUGHT BETWEEN FORKLIFT RIGHT WRIST BROKEN LEFT TOE AMPUTATION`
-- `STEPPED ON NAIL PUNCTURE WOUND FOOT WRIST`
-- `SLIPPED PAINT SCRAPER LACERATION RIGHT LEG AND RIGHT FOREARM`
-- `STEPPED ON NAIL PUNCTURE WOUND RIGHT FOOT`
-- `STEPPED ON NAIL PUNCTURE WOUND LEFT FOOT`
-
-### Cluster 14: Neck and shoulder strain, incl. vehicle accidents
-
-2,011 training claims (4.7%), median cost 5,975. Most over-represented words: SORTING, BARS, WHIPLASH, ALUMINIUM, STRESS, NECK, ACCIDENT, MOTOR.
-
-- `MOTOR VEHICLE ACCIDENT NECK STRAIN NECK AND SHOULDER`
-- `MOTOR VEHICLE ACCIDENT NECK AND SHOULDER STRAIN`
-- `CAR ACCIDENT SHOULDER NECK STRAIN`
-- `INJURY TO NECK AND SHOULDER STRAIN`
-- `MOTOR VEHICLE ACCIDENT STRAINED NECK AND SHOULDER`
-- `NECK SHOULDER STRAIN NECK`
-
-### Cluster 11: Eye: foreign body from grinding
-
-2,005 training claims (4.6%), median cost 332. Most over-represented words: FOREIGN, BODY, PARTICLE, GRINDING, EYE, FLEW, DUST, GRINDER.
-
-- `FOREIGN BODY FROM GRINDING FOREIGN BODY RIGHT EYE`
-- `FOREIGN BODY FROM GRINDING FOREIGN BODY IN RIGHT EYE`
-- `GRINDING FOREIGN BODY FOREIGN BODY LEFT EYE`
-- `FOREIGN BODY IN EYE GRINDING FOREIGN BODY LEFT EYE`
-- `FOREIGN BODY WHILST GRINDING FOREIGN BODY LEFT EYE`
-- `FOREIGN BODY WHILST GRINDING FOREIGN BODY IN RIGHT EYE`
-
-### Cluster 5: Eye: corneal abrasion and irritation
-
-1,772 training claims (4.1%), median cost 584. Most over-represented words: LATHE, EYES, CORNEAL, FLASH, BLEW, CORNEA, ABRASION, SORE.
-
-- `INJURY TO RIGHT EYE METAL ABRASION LEFT EYE`
-- `STEEL STRUCK EYE LEFT CORNEAL ABRASION`
-- `STRUCK METAL FRAGMENT LEFT EYE IRRITATION TO RIGHT EYE`
-- `STEEL FELL INTO EYE ABRASION RIGHT EYE`
-- `METAL FELL IN EYE RIGHT CORNEAL ULCER LEFT EYE`
-- `STEEL DEBRIS FLEW INTO EYE RIGHT CORNEAL ABRASION RIGHT ELBOW`
-
-### Cluster 12: Ankle sprains
-
-1,747 training claims (4.0%), median cost 2,246. Most over-represented words: SPRAINED, ANKLE, ROLLED, STEPPED, SPRAIN, STEP, TWISTED, FRACTURE.
-
-- `FELL AND TWISTED ANKLE SPRAINED LEFT ANKLE`
-- `FELL AND TWISTED ANKLE SPRAINED RIGHT ANKLE`
-- `SPRAINED LEFT ANKLE`
-- `SPRAINED RIGHT ANKLE`
-- `SLIPPED AND TWISTED ANKLE SPRAINED RIGHT ANKLE`
-- `SLIPPED AND TWISTED ANKLE SPRAINED LEFT ANKLE`
-
-### Cluster 13: Burns
-
-1,136 training claims (2.6%), median cost 894. Most over-represented words: METALLIC, MUG, COFFEE, HOT, BURNED, BURN, GAS, OIL.
-
-- `BURNED HOT WATER BURN RIGHT HAND`
-- `BURNED HOT WATER BURNED RIGHT HAND`
-- `CAUGHT HAND ON HOT METAL BURN TO LEFT PALM`
-- `HOT WATER SPLASHED ONTO ARM BURN LEFT HAND`
-- `STRUCK WITH HOT OIL BURN TO RIGHT HAND AND WRIST`
-- `SPLASHED HOT WATER BURN TO LEFT HAND`
-
-## 6. Model matrix
-
-With every text layer switched on, the fitted pipeline turns each claim into **144 columns**:
-
-| Branch             |   Columns |
-|:-------------------|----------:|
-| rules_categorical  |        47 |
-| categorical        |        36 |
-| tfidf_svd          |        20 |
-| embedding_clusters |        15 |
-| numeric            |        11 |
-| binary             |        10 |
-| log                |         3 |
-| rules_numeric      |         2 |
-
-The switches in `text_layers` remove Layer 1, 2 or 3 for the Phase 5 ablation. The target (`UltimateIncurredClaimCost`) is not among the 35 input columns the pipeline reads, a check that also runs in the test suite.
-
-## 7. Leakage safeguards
-
-- **Nothing learned outside the pipeline.** Group medians, scalers, one-hot categories, the TF-IDF vocabulary, SVD and KMeans are all steps of one scikit-learn Pipeline. They are fit on training rows only, and cross-validation refits them in every fold.
+- **Nothing learned outside the pipeline.** Group medians, scalers and one-hot categories are all steps of one scikit-learn Pipeline. They are fit on training rows only, and cross-validation refits them in every fold.
 - **Fixed rules only before the split.** Cleaning, feature formulas and the keyword taxonomy use thresholds fixed in the config and learn nothing from the data.
-- **Pretrained embeddings.** The sentence-transformer is used as-is, never trained on these claims.
-- **Design decisions on training claims only.** The placeholder-estimate value, the coverage iteration and the choice of k all used training claims.
+- **Design decisions on training claims only.** The placeholder-estimate value and the keyword-list iterations both used training claims.
 - **No target in the inputs.** The target and anything derived from it (such as the ultimate/initial ratio) are never model inputs.

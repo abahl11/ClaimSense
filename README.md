@@ -1,4 +1,4 @@
-# Workers' Compensation Claim Cost Prediction
+# Workers' Comp Claim Severity Prediction & Early Triage
 
 Predict the **ultimate cost** of a workers' compensation claim at the moment it is reported,
 **flag likely high-cost claims** for early escalation, and **explain the drivers** of every
@@ -36,7 +36,7 @@ decision support for that first moment:
 flowchart LR
     A[train.csv] --> B[Validate and clean<br/>fixed rules, no learning]
     B --> C[EDA<br/>training period only]
-    B --> D[Features<br/>tabular + 3 text layers]
+    B --> D[Features<br/>tabular + keyword rules<br/>on the description]
     D --> E[Time-based split<br/>latest 20% = test]
     E --> F[Regression<br/>baselines, model families,<br/>drift approaches, ablation, Optuna]
     E --> G[High-cost classifier<br/>capacity-based threshold,<br/>calibration]
@@ -54,15 +54,20 @@ flowchart LR
    are frequent vs expensive; and a key finding for everything that follows: costs rise steeply
    over time, as a price-level change, not a change in claim mix.
 3. **Features** ([report](reports/features.md)): tabular features (reporting delay, wages,
-   flags for recording artifacts) plus three layers of NLP on the claim description: a keyword
-   taxonomy (body part, nature, cause), TF-IDF with truncated SVD, and sentence-embedding
-   (all-MiniLM-L6-v2) clusters, all inside one scikit-learn pipeline.
+   flags for recording artifacts) plus NLP on the free-text claim description: keyword rules
+   label each claim's body part, injury nature and injury cause, so every text feature can be
+   read and checked by a claims adjuster. All learned steps sit inside one scikit-learn pipeline.
+   An earlier version also tested TF-IDF with truncated SVD and sentence-embedding clusters;
+   they improved cross-validated error only slightly beyond the keyword rules, so they were
+   removed to keep the model simple and explainable (that version is commit `0257544`, with its
+   results in `reports/results.md` there).
 4. **Validation**: a time-based test set (the most recent 20% of claims), scored once, and
    time-ordered cross-validation inside the training period for every decision.
 5. **Regression** ([results](reports/results.md)): baselines (training median, adjuster's
    estimate), Ridge, random forest and LightGBM on log cost, Tweedie and Gamma losses, four ways
-   of handling price drift, a text-layer ablation, Optuna tuning, smearing for the
-   retransformation bias, 80% intervals from quantile models, and error analysis.
+   of handling price drift, a text ablation (with vs without the keyword features), Optuna
+   tuning, smearing for the retransformation bias, 80% intervals from quantile models, and
+   error analysis.
 6. **High-cost flag**: baseline ranking by initial estimate vs logistic regression and
    class-weighted LightGBM, a threshold set from review capacity, and probability calibration.
 7. **Explainability and fairness** ([report](reports/explainability.md)): SHAP global and
@@ -73,17 +78,17 @@ flowchart LR
 
 <!-- BEGIN GENERATED: results -->
 
-| Model (test set, most recent 20% of claims)                 | RMSLE   | R² (log)   | MAE (typical prediction)   | Total predicted / actual   |
-|:------------------------------------------------------------|:--------|:-----------|:---------------------------|:---------------------------|
-| Final model (LightGBM, tuned (A, Layers 1-2: + TF-IDF/SVD)) | 0.549   | 0.876      | 10,353                     | 1.04                       |
-| Adjuster's initial estimate                                 | 0.888   | 0.674      | 11,641                     | 0.73                       |
-| Training median                                             | 1.793   | -0.328     | 19,657                     | 0.13                       |
+| Model (test set, most recent 20% of claims)      | RMSLE   | R² (log)   | MAE (typical prediction)   | Total predicted / actual   |
+|:-------------------------------------------------|:--------|:-----------|:---------------------------|:---------------------------|
+| Final model (LightGBM, tuned (A, Keyword rules)) | 0.556   | 0.872      | 10,319                     | 1.04                       |
+| Adjuster's initial estimate                      | 0.888   | 0.674      | 11,641                     | 0.73                       |
+| Training median                                  | 1.793   | -0.328     | 19,657                     | 0.13                       |
 
 | Test label          | Method                   | PR-AUC   | Recall, review top 5%   | Recall, review top 10%   | Recall, review top 20%   |
 |:--------------------|:-------------------------|:---------|:------------------------|:-------------------------|:-------------------------|
-| Fixed threshold     | High-cost flag           | 0.959    | 16.1%                   | 32.2%                    | 64.4%                    |
+| Fixed threshold     | High-cost flag           | 0.958    | 16.1%                   | 32.2%                    | 64.4%                    |
 | Fixed threshold     | Rank by initial estimate | 0.943    | 16.1%                   | 32.2%                    | 63.2%                    |
-| Within-year top 10% | High-cost flag           | 0.590    | 35.4%                   | 55.3%                    | 75.4%                    |
+| Within-year top 10% | High-cost flag           | 0.589    | 35.4%                   | 54.9%                    | 74.7%                    |
 | Within-year top 10% | Rank by initial estimate | 0.567    | 34.1%                   | 54.8%                    | 72.6%                    |
 
 <!-- END GENERATED: results -->
@@ -113,10 +118,10 @@ the model ranks highest. Full comparison, including every candidate model:
 
 1. **Adjusters' first estimates are rough.** The typical initial estimate is off by a factor of 1.52 and only 32% land within ±25% of the final cost.
 2. **Costs rise 3.7x over the period, as a price-level change.** Holding the claim mix fixed barely changes the growth, and 31% of the most recent claims exceed the historical high-cost threshold.
-3. **The model beats the adjusters' estimate.** Test RMSE on the log scale is 0.549 against 0.888 (38% lower), and total predicted cost is 1.04 of actual against 0.73 for the initial estimates.
-4. **The claim description is worth reading.** Text features cut cross-validated error by 21% relative to structured fields alone.
-5. **What drives predictions most.** Initial estimate (39% of total attribution), Description wording (TF-IDF/SVD) (17% of total attribution), Initial estimate / weekly wage (15% of total attribution) are the three strongest drivers. Together the top five account for 83%.
-6. **The adjuster's estimate is informative but not taken at face value.** Moving from the lowest tenth of initial estimates (<= 1,000) to the highest (>= 40,510) changes the model output by x11.47 on average, while the estimates themselves differ 40.5-fold: the model shrinks extreme estimates towards what similar claims usually cost.
+3. **The model beats the adjusters' estimate.** Test RMSE on the log scale is 0.556 against 0.888 (37% lower), and total predicted cost is 1.04 of actual against 0.73 for the initial estimates.
+4. **The claim description is worth reading.** Text features cut cross-validated error by 19% relative to structured fields alone.
+5. **What drives predictions most.** Initial estimate (42% of total attribution), Initial estimate / weekly wage (12% of total attribution), Injury nature (10% of total attribution) are the three strongest drivers. Together the top five account for 77%.
+6. **The adjuster's estimate is informative but not taken at face value.** Moving from the lowest tenth of initial estimates (<= 1,000) to the highest (>= 40,510) changes the model output by x13.84 on average, while the estimates themselves differ 40.5-fold: the model shrinks extreme estimates towards what similar claims usually cost.
 
 <!-- END GENERATED: insights -->
 
@@ -142,9 +147,7 @@ environment (and the `Makefile` has the same targets for macOS / Linux). Individ
 (any subset, in order). To score new claims in the `train.csv` format:
 `python -m src.models.predict --input new_claims.csv --output scored.csv`.
 
-The first run downloads the small all-MiniLM-L6-v2 sentence-transformer from Hugging Face and
-caches the embeddings in `data/processed/`. Everything is seeded from `config/config.yaml`, and every
-threshold and setting lives there.
+Everything is seeded from `config/config.yaml`, and every threshold and setting lives there.
 
 ## Repository structure
 
@@ -154,7 +157,7 @@ src/
   config.py, pipeline.py    config loader and the CLI (python -m src.pipeline --stage ...)
   data/                     load.py, validate.py (quality report), clean.py (rule-based cleaning)
   analysis/                 eda.py, summaries.py
-  features/                 tabular.py, text_rules.py, text_embed.py, build.py (pipeline), report.py
+  features/                 tabular.py, text_rules.py (keyword taxonomy), build.py (pipeline), report.py
   models/                   split.py, datasets.py, targets.py, estimators.py, train_regression.py,
                             tune.py (Optuna), train_classifier.py, artifacts.py, predict.py
   evaluation/               metrics.py, error_analysis.py, fairness.py
@@ -172,7 +175,7 @@ data/, models/              local data and model artifacts (gitignored)
 |---|---|
 | [data_quality_report.md](reports/data_quality_report.md) | Every data issue, its count, the rule applied and why |
 | [eda.md](reports/eda.md) | Exploratory analysis and key findings |
-| [features.md](reports/features.md) | Feature catalogue, taxonomy coverage, text layers, embedding clusters |
+| [features.md](reports/features.md) | Feature catalogue, keyword taxonomy and its coverage, model matrix |
 | [results.md](reports/results.md) | Validation design, model comparison, drift, ablation, tuning, test results, classifier |
 | [explainability.md](reports/explainability.md) | SHAP insights, example claims, fairness checks |
 | [model_card.md](reports/model_card.md) | Intended use, limitations, fairness and ethics |

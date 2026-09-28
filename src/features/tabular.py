@@ -180,7 +180,7 @@ def estimate_features(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
 
 
 def engineer_features(df: pd.DataFrame, cfg: Config) -> pd.DataFrame:
-    """Add every row-wise engineered feature, including the Layer 1 text rules.
+    """Add every row-wise engineered feature, including the keyword text rules.
 
     Args:
         df: Cleaned claims (output of the clean stage, or a new claim for scoring).

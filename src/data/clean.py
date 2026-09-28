@@ -364,8 +364,8 @@ def _text_rules(cfg: Config) -> list[Rule]:
             column=text,
             issue="Claim description has encoding errors, extra whitespace or lower case",
             action="Normalised (bad characters replaced, whitespace collapsed, upper-cased)",
-            rationale="Keyword rules and TF-IDF match exact tokens, so every description needs "
-            "one consistent form.",
+            rationale="The keyword rules match exact words, so every description needs one "
+            "consistent form.",
             detect=lambda df: df[text].notna() & (df[text] != normalize_text(df[text], bad)),
             fix=normalize_column(text, bad),
         ),

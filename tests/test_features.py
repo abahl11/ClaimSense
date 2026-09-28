@@ -1,4 +1,4 @@
-"""Tests for engineered features (tabular.py), text embeddings and the pipeline (build.py)."""
+"""Tests for engineered features (tabular.py) and the preprocessing pipeline (build.py)."""
 
 import numpy as np
 import pandas as pd
@@ -17,8 +17,6 @@ from src.features.tabular import (
     make_bands,
     total_dependents,
 )
-
-NO_EMBEDDINGS = {"embedding_clusters": False}
 
 
 def engineered(cfg, make_claims, *overrides) -> pd.DataFrame:
@@ -169,7 +167,7 @@ def test_group_median_imputer_learns_only_from_fit_rows():
 
 
 def test_pipeline_output_is_complete_and_excludes_target(cfg, small_claims):
-    pipe = build_preprocessor(cfg, NO_EMBEDDINGS).fit(small_claims)
+    pipe = build_preprocessor(cfg).fit(small_claims)
     matrix = pipe.transform(small_claims)
     names = feature_names(pipe)
     assert matrix.shape == (len(small_claims), len(names))
@@ -178,19 +176,11 @@ def test_pipeline_output_is_complete_and_excludes_target(cfg, small_claims):
     assert not any(cfg.col("target") in name for name in names)
 
 
-@pytest.mark.parametrize("layer", ["rules", "tfidf_svd"])
-def test_layer_switch_removes_its_columns(cfg, small_claims, layer):
-    on = feature_names(build_preprocessor(cfg, NO_EMBEDDINGS).fit(small_claims))
-    off = feature_names(build_preprocessor(cfg, {**NO_EMBEDDINGS, layer: False}).fit(small_claims))
-    assert any(name.startswith(layer) for name in on)
-    assert not any(name.startswith(layer) for name in off)
-
-
-def test_embedding_layer_with_fake_embeddings(cfg, small_claims, fake_embeddings):
-    layers = {"rules": False, "tfidf_svd": False, "embedding_clusters": True}
-    pipe = build_preprocessor(cfg, layers).fit(small_claims)
-    cluster_columns = [n for n in feature_names(pipe) if n.startswith("embedding_clusters")]
-    assert 1 <= len(cluster_columns) <= cfg["embeddings"]["n_clusters"]
+def test_rules_switch_removes_the_keyword_columns(cfg, small_claims):
+    on = feature_names(build_preprocessor(cfg).fit(small_claims))
+    off = feature_names(build_preprocessor(cfg, {"rules": False}).fit(small_claims))
+    assert any(name.startswith("rules_") for name in on)
+    assert not any(name.startswith("rules_") for name in off)
 
 
 def test_unknown_layer_name_is_rejected(cfg):

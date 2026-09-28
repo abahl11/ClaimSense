@@ -2,14 +2,14 @@
 
 Steps, in order:
 
-1. ``engineer``: row-wise features and Layer 1 text rules (learns nothing).
+1. ``engineer``: row-wise features and the keyword text rules (learns nothing).
 2. ``impute``: part-time / full-time group medians plus missing indicators (learned).
-3. ``columns``: a ColumnTransformer that scales numerics, log-transforms skewed ones,
-   one-hot encodes categoricals and runs the text layers (TF-IDF + SVD, embedding clusters).
+3. ``columns``: a ColumnTransformer that scales numerics, log-transforms skewed ones and
+   one-hot encodes categoricals, including the keyword-rule labels.
 
 Every learned step sits inside this one scikit-learn Pipeline, so calling ``fit`` on
 training rows is the only way anything is learned; cross-validation refits it per fold.
-Which text layers are included is controlled by ``text_layers`` in the config.
+Whether the keyword-rule features are included is controlled by ``text_layers`` in the config.
 """
 
 from __future__ import annotations
@@ -24,15 +24,10 @@ from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardSc
 
 from src.config import Config
 from src.features.tabular import FeatureEngineer, GroupMedianImputer
-from src.features.text_embed import embedding_clusters, tfidf_svd
 
-LAYERS = ("rules", "tfidf_svd", "embedding_clusters")
-# Output-column prefixes of each text layer (ColumnTransformer branch names).
-LAYER_PREFIXES = {
-    "rules": ("rules_categorical__", "rules_numeric__"),
-    "tfidf_svd": ("tfidf_svd__",),
-    "embedding_clusters": ("embedding_clusters__",),
-}
+LAYERS = ("rules",)
+# Output-column prefixes of each text-feature switch (ColumnTransformer branch names).
+LAYER_PREFIXES = {"rules": ("rules_categorical__", "rules_numeric__")}
 
 
 def log1p_nonnegative(values: np.ndarray) -> np.ndarray:
@@ -66,12 +61,9 @@ def feature_groups(cfg: Config, layers: dict[str, bool]) -> dict[str, list[str]]
 
 
 def model_input_columns(cfg: Config, layers: dict[str, bool] | None = None) -> list[str]:
-    """Every column the ColumnTransformer reads (the description counts if a layer uses it)."""
+    """Every column the ColumnTransformer reads."""
     layers = active_layers(cfg, layers)
-    columns = [c for group in feature_groups(cfg, layers).values() for c in group]
-    if layers["tfidf_svd"] or layers["embedding_clusters"]:
-        columns.append(cfg.col("description"))
-    return columns
+    return [c for group in feature_groups(cfg, layers).values() for c in group]
 
 
 def numeric_pipeline() -> Pipeline:
@@ -114,11 +106,6 @@ def branch_transformers(cfg: Config, layers: dict[str, bool]) -> list[tuple[str,
             ("rules_categorical", categorical_pipeline(cfg), groups["rules_categorical"]),
             ("rules_numeric", numeric_pipeline(), groups["rules_numeric"]),
         ]
-    text = cfg.col("description")
-    if layers["tfidf_svd"]:
-        branches.append(("tfidf_svd", tfidf_svd(cfg), text))
-    if layers["embedding_clusters"]:
-        branches.append(("embedding_clusters", embedding_clusters(cfg), text))
     return branches
 
 
@@ -139,7 +126,7 @@ def build_preprocessor(cfg: Config, layers: dict[str, bool] | None = None) -> Pi
 
     Args:
         cfg: Loaded project configuration.
-        layers: Optional overrides of the ``text_layers`` switches, e.g. ``{"tfidf_svd": False}``.
+        layers: Optional overrides of the ``text_layers`` switches, e.g. ``{"rules": False}``.
 
     Returns:
         An unfitted Pipeline mapping cleaned claims to a dense feature matrix.
@@ -166,14 +153,14 @@ def feature_names(preprocessor: Pipeline) -> list[str]:
 def select_columns(
     names: list[str], layers: dict[str, bool] | None = None, drop_prefixes: tuple[str, ...] = ()
 ) -> np.ndarray:
-    """Positions of the output columns to keep for a text-layer subset.
+    """Positions of the output columns to keep for a text-feature subset.
 
-    Every ColumnTransformer branch is fit independently, so dropping a layer's columns from
-    the full matrix gives exactly the matrix a pipeline without that layer would produce.
+    Every ColumnTransformer branch is fit independently, so dropping the keyword-rule columns
+    from the full matrix gives exactly the matrix a pipeline without them would produce.
 
     Args:
         names: Output column names of a fitted preprocessor.
-        layers: Layers to keep (missing keys count as kept). ``None`` keeps all layers.
+        layers: Text-feature switches (missing keys count as kept). ``None`` keeps everything.
         drop_prefixes: Further column-name prefixes to drop, e.g. one feature's one-hot columns.
 
     Returns:

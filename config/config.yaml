@@ -3,14 +3,13 @@
 # Relative paths are resolved against the project root, not the current directory.
 # Sections follow the pipeline order: data -> cleaning -> split -> features -> models -> reports.
 
-# The single seed used by every stochastic component (splits, models, SVD, KMeans, Optuna).
+# The single seed used by every stochastic component (splits, models, Optuna).
 random_seed: 42
 
 paths:
   raw_data: data/raw/train.csv
   processed_dir: data/processed
   clean_data: data/processed/claims_clean.parquet
-  embeddings_cache: data/processed/description_embeddings.parquet
   models_dir: models
   reports_dir: reports
   figures_dir: reports/figures
@@ -40,7 +39,7 @@ logging:
   level: INFO
   format: "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s"
   datefmt: "%Y-%m-%d %H:%M:%S"
-  quiet_loggers: [httpx, huggingface_hub, sentence_transformers, urllib3, matplotlib] # WARNING+ only
+  quiet_loggers: [urllib3, matplotlib] # WARNING+ only
 
 data:
   source_url: https://www.kaggle.com/competitions/actuarial-loss-estimation
@@ -174,17 +173,16 @@ features:
     - hours_per_week_was_missing
     - days_per_week_was_missing
   categorical: [gender, marital_status, age_band, accident_month, accident_weekday] # one-hot
-  text_rule_categorical: [body_part, injury_nature, injury_cause] # one-hot (Layer 1)
-  text_rule_numeric: [num_body_parts_mentioned, description_length] # standardised (Layer 1)
+  text_rule_categorical: [body_part, injury_nature, injury_cause] # one-hot (keyword rules)
+  text_rule_numeric: [num_body_parts_mentioned, description_length] # standardised (keyword rules)
   onehot_min_frequency: 20 # rarer categories are grouped into one "infrequent" column
 
-# Which description features the model sees. Switched off one at a time for the Phase 5 ablation.
+# Whether the model sees the keyword-rule features of the description. The Phase 5 ablation
+# switches them off to measure what the description adds.
 text_layers:
-  rules: true # Layer 1: keyword taxonomy
-  tfidf_svd: true # Layer 2: TF-IDF + truncated SVD
-  embedding_clusters: true # Layer 3: sentence-embedding clusters
+  rules: true # keyword taxonomy (body part, injury nature, injury cause)
 
-# Layer 1: keyword taxonomy for ClaimDescription (src/features/text_rules.py). Keywords match
+# Keyword taxonomy for ClaimDescription (src/features/text_rules.py). Keywords match
 # whole words. For injury_nature and injury_cause the categories are in PRIORITY order: when a
 # description matches several, the first listed wins (natures are ordered roughly by
 # severity). For body_part, one distinct part gives that part and two or more give "multiple".
@@ -244,49 +242,6 @@ text_rules:
     animal_insect: [SPIDER, REDBACK, DOG, INSECT, SNAKE, BEE, WASP]
   unmatched_examples: 10 # sample unmatched descriptions shown per field in features.md
 
-# Layer 2: TF-IDF on words and word pairs, compressed with truncated SVD (fit on training rows).
-tfidf:
-  ngram_range: [1, 2]
-  min_df: 5 # ignore terms in fewer than 5 training descriptions
-  sublinear_tf: true
-  svd_components: 20
-  components_shown: 5 # SVD components described in features.md
-  top_terms_shown: 6
-
-# Layer 3: sentence embeddings (pretrained, no fitting) clustered with KMeans on training rows.
-embeddings:
-  model_name: sentence-transformers/all-MiniLM-L6-v2
-  batch_size: 256
-  k_candidates: [4, 6, 8, 10, 12, 15, 20, 25]
-  min_useful_k: 10 # manual read: smaller k merges claim types with very different costs
-  silhouette_sample: 10000 # silhouette is O(n^2), so it is computed on a random sample
-  kmeans_n_init: 10
-  # Chosen in Phase 3. Silhouette is flat and low for every k >= 10, so it cannot decide; k = 15
-  # is a local peak there and gives clusters that each read as one kind of claim, splitting
-  # groups with very different costs that smaller k merges (e.g. knee vs ankle, two eye types).
-  n_clusters: 15
-  # Human-readable name -> anchor description near that cluster's centre. Names follow the
-  # anchors (whichever cluster an anchor falls in gets its name), so they survive renumbering.
-  cluster_names:
-    "Finger cuts and caught fingers": "STRUCK METAL LACERATED LEFT INDEX FINGER"
-    "Lifting: lower back strain": "LIFTING LOWER BACK STRAIN"
-    "Trips and falls with bruising": "TRIPPED AND FELL ON HAND BRUISED RIGHT HAND"
-    "Lifting: shoulder and arm strain": "LIFTING RIGHT SHOULDER STRAIN"
-    "Knife cuts": "STRUCK KNIFE LACERATED LEFT FINGER"
-    "Back strain, no lifting mentioned": "STRAINED LOWER BACK"
-    "Wrist and forearm injuries": "FRACTURED LEFT WRIST"
-    "Slips on wet floors and stairs": "SLIPPED ON WET FLOOR SPRAINED RIGHT KNEE AND SHOULDER"
-    "Knee injuries": "TWISTED KNEE RIGHT KNEE INJURY"
-    "Punctures and mixed wounds": "STEPPED ON NAIL PUNCTURE WOUND RIGHT FOOT"
-    "Neck and shoulder strain, incl. vehicle accidents": "MOTOR VEHICLE ACCIDENT NECK AND SHOULDER STRAIN"
-    "Eye: foreign body from grinding": "GRINDING FOREIGN BODY FOREIGN BODY LEFT EYE"
-    "Eye: corneal abrasion and irritation": "STEEL STRUCK EYE LEFT CORNEAL ABRASION"
-    "Ankle sprains": "SPRAINED LEFT ANKLE"
-    "Burns": "BURNED HOT WATER BURN RIGHT HAND"
-  examples_per_cluster: 6
-  top_words_per_cluster: 8
-  min_word_count: 30 # a word needs this many training occurrences to be a cluster top word
-
 # Phase 4: evaluation settings shared by the regression and classification stages.
 evaluation:
   # Model selection uses RMSE on the log scale: relative errors count equally for small and
@@ -318,8 +273,8 @@ regression:
   # Price-drift approach C/D: log-linear cost trend fitted on the most recent training years,
   # used to bring every claim to the price level of the latest training date and back.
   trend_window_years: 5
-  # Ablation: a feature set with more text layers must beat a simpler one by more than this
-  # (CV RMSLE) to be preferred.
+  # Ablation: the keyword-rule features are kept only if they beat the no-text model by more
+  # than this (CV RMSLE).
   ablation_tolerance: 0.001
   interval_quantiles: [0.1, 0.5, 0.9] # 80% prediction interval plus a median model
   smearing_folds: 5 # out-of-fold residuals for the retransformation (smearing) factor
@@ -402,6 +357,7 @@ eda:
   index_controls: [injury_nature, body_part, injury_cause, age_band, part_time]
 
 reporting:
+  project_name: "Workers' Comp Claim Severity Prediction & Early Triage"
   target_percentiles: [0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 0.999]
   reference_percentiles: [0.50, 0.90, 0.99] # marked on the target histogram
   raw_hist_clip_percentile: 0.99 # raw-scale histogram is cut here so the bulk is visible

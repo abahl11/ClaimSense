@@ -18,11 +18,6 @@ joblib==1.6.0
 shap==0.52.0
 matplotlib==3.11.2
 
-# Text embeddings (torch and transformers pinned because they affect embedding values)
-sentence-transformers==6.1.0
-transformers==5.17.0
-torch==2.14.0
-
 # App
 streamlit==1.64.0
 

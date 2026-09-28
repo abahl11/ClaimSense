@@ -251,28 +251,22 @@ def ablation_section(r: dict[str, Any]) -> list[str]:
         }
         for c in ablation
     ]
-    steps = [
-        f"adding {later['name'].split(': ')[-1].removeprefix('+ ')}: "
-        f"{later['cv']['rmsle'] - earlier['cv']['rmsle']:+.4f}"
-        for earlier, later in zip(ablation[:-1], ablation[1:], strict=True)
-    ]
     return [
         "## 4. What the text features add (ablation)",
         "",
-        "The chosen model and drift approach, refit with each set of description features. "
-        "Structured fields (including the initial estimate) are always present, so this "
-        "measures what the free-text description adds on top of them.",
+        "The chosen model and drift approach, refit with and without the keyword-rule features "
+        "of the description (body part, injury nature, injury cause). Structured fields "
+        "(including the initial estimate) are always present, so this measures what the "
+        "free-text description adds on top of them.",
         "",
-        figure("regression_ablation", "Text-layer ablation"),
+        figure("regression_ablation", "Text ablation"),
         "",
         markdown_table(pd.DataFrame(rows)),
         "",
-        f"**Takeaway.** Adding all three text layers to the structured fields changes CV RMSLE "
-        f"by {cv_gain:+.1%} and test RMSLE by {test_gain:+.1%}. Step by step: "
-        + "; ".join(steps)
-        + f" (CV RMSLE). The final model uses **{chosen['name']}**: a richer set is only "
-        "preferred when "
-        "it improves CV RMSLE by more than the configured tolerance.",
+        f"**Takeaway.** Adding the keyword-rule features to the structured fields changes CV "
+        f"RMSLE by {cv_gain:+.1%} and test RMSLE by {test_gain:+.1%}. The final model uses "
+        f"**{chosen['name']}**: the text features are only kept when they improve CV RMSLE by "
+        "more than the configured tolerance.",
         "",
     ]
 

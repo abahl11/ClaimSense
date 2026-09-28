@@ -31,6 +31,15 @@ logger = logging.getLogger(__name__)
 
 ADJUSTER = "Baseline B: adjuster's initial estimate"
 INITIAL_RANK = "Baseline: rank by initial estimate"
+FAMILY_NAMES = {
+    "ridge": "Ridge Regression",
+    "random_forest": "Random Forest",
+    "lightgbm": "LightGBM",
+}
+TECH_STACK = (
+    "Python, pandas, NumPy, scikit-learn, LightGBM, Optuna, SHAP, Streamlit, Matplotlib, pytest; "
+    "rule-based NLP (keyword extraction with regular expressions)"
+)
 
 
 @dataclass
@@ -217,29 +226,6 @@ def calibration_limitation(f: Facts) -> str:
     )
 
 
-def text_layers_used(f: Facts) -> str:
-    """Plain-language list of the text layers in the final model."""
-    names = {
-        "rules": "keyword taxonomy",
-        "tfidf_svd": "TF-IDF",
-        "embedding_clusters": "sentence-embedding clusters",
-    }
-    layers = f.final["description"]["layers"]
-    used = [label for key, label in names.items() if layers.get(key)]
-    return ", ".join(used) if used else "none"
-
-
-def dropped_layers(f: Facts) -> list[str]:
-    """Text layers evaluated in the ablation but not used by the final model."""
-    names = {
-        "tfidf_svd": "TF-IDF",
-        "embedding_clusters": "sentence-embedding clusters",
-        "rules": "keyword taxonomy",
-    }
-    layers = f.final["description"]["layers"]
-    return [label for key, label in names.items() if not layers.get(key, True)]
-
-
 def model_card(f: Facts, cfg: Config) -> str:
     """Markdown model card."""
     v, c, final = f.validation, f.classifier, f.final
@@ -252,7 +238,7 @@ def model_card(f: Facts, cfg: Config) -> str:
     chosen_at = f.capacity(c["chosen"], review)
     return "\n".join(
         [
-            "# Model card: workers' compensation claim cost model and high-cost flag",
+            f"# Model card: {cfg['reporting']['project_name']}",
             "",
             GENERATED_NOTE.format(stage="report"),
             "",
@@ -391,27 +377,38 @@ def largest_claims_clause(f: Facts) -> str:
     return f"even the {top['size_group'].lower()} of claims are not under-predicted on average"
 
 
-def flag_bullet(f: Facts, cfg: Config) -> str:
-    """Resume bullet on the high-cost flag, SHAP, fairness and the app."""
-    c = f.classifier
-    comparison = f.fairness["gender_comparison"]
-    lead = (
-        "- Showed that a dedicated high-cost classifier added no lift over the cost model's own "
-        "ranking, so one calibrated model powers both reserving and triage"
-        if c["chosen_kind"] == "cost_rank"
-        else f"- Built a calibrated high-cost claim flag ({c['chosen']})"
+def resume_bullets(f: Facts) -> list[str]:
+    """Three resume bullets: the system and its result, the data work, the models."""
+    result = (
+        f"it reduced prediction error by {pct(f.rmsle_gain, 0)} compared with adjusters' "
+        "initial estimates"
+        if f.rmsle_gain > 0
+        else "it did not beat adjusters' initial estimates on the holdout"
     )
-    brier = c["calibration"]["test_brier_calibrated"]
-    reference = c["base_rate"]["test"] * (1 - c["base_rate"]["test"])
-    gender = (
-        "excluded gender after showing it adds no accuracy"
-        if comparison["negligible"] and cfg["fairness"]["exclude_gender"]
-        else "checked fairness across gender and age bands"
+    text = (
+        f", which cut error by {pct(f.text_gain, 0)}"
+        if f.text_gain > 0
+        else "; an ablation showed they did not reduce error"
     )
-    return (
-        f"{lead} (test Brier score {brier:.3f} vs {reference:.3f} for a no-skill forecast); "
-        f"added SHAP explanations, fairness checks ({gender}) and a Streamlit triage app."
+    family = f.final["description"]["family"]
+    best = FAMILY_NAMES.get(family, family)
+    delivered = (
+        f"The best model, {best}, powers a high-cost claim flag, SHAP explanations for each "
+        "prediction and a Streamlit app."
+        if f.classifier["chosen_kind"] == "cost_rank"
+        else f"The best model, {best}, is paired with a calibrated high-cost claim flag, SHAP "
+        "explanations for each prediction and a Streamlit app."
     )
+    return [
+        "- Built an end-to-end machine learning system to predict workers' compensation claim "
+        "costs at first report, using structured claim data and free-text injury descriptions "
+        f"from {f.quality['raw_rows']:,} claims; {result}.",
+        f"- Cleaned and explored the data, finding a {f.eda['yearly_median_growth']:.1f}x rise "
+        "in claim costs over time, and engineered features including keyword-based extraction "
+        f"of injury type and body part from claim descriptions{text}.",
+        "- Compared Ridge Regression, Random Forest and LightGBM using time-ordered "
+        f"cross-validation to avoid data leakage. {delivered}",
+    ]
 
 
 def interview_prep(f: Facts, cfg: Config) -> str:
@@ -436,18 +433,20 @@ def interview_prep(f: Facts, cfg: Config) -> str:
             "",
             "Every number below comes from `reports/metrics/`; re-running the pipeline updates it.",
             "",
+            "## Project",
+            "",
+            f"**{cfg['reporting']['project_name']}**",
+            "",
+            f"Tech stack: {TECH_STACK}.",
+            "",
             "## Resume bullets",
             "",
-            f"- Built an end-to-end workers' compensation claim cost model (LightGBM with NLP on "
-            f"claim descriptions) on {f.quality['raw_rows']:,} claims; on a time-based holdout it "
-            f"cut log-scale error by {pct(f.rmsle_gain, 0)} versus adjusters' initial reserves "
-            f"and predicted {final['test']['bias_ratio']:.2f} of total cost versus "
-            f"{f.adjuster['bias_ratio']:.2f} for the initial estimates.",
-            f"- Designed leakage-free, time-ordered validation that exposed a "
-            f"{eda['yearly_median_growth']:.1f}x cost trend, compared four drift-handling "
-            f"strategies, and showed through ablation that NLP on the claim description "
-            f"({text_layers_used(f)}) reduces error by {pct(f.text_gain, 0)}.",
-            flag_bullet(f, cfg),
+            *resume_bullets(f),
+            "",
+            '"Error" in the bullets is RMSE on the log scale (RMSLE) on the test set, the most '
+            f"recent {pct(cfg['split']['test_fraction'], 0)} of claims by "
+            "accident date. The text-feature figure is the cross-validated reduction from the "
+            "ablation.",
             "",
             "## Likely interview questions",
             "",
@@ -487,25 +486,26 @@ def interview_prep(f: Facts, cfg: Config) -> str:
             "",
             "**4. What did the NLP add?**",
             "",
-            f"In an ablation on the same model, the text features reduced cross-validated RMSLE by "
-            f"{pct(f.text_gain, 0)}. The keyword taxonomy gives interpretable labels (body part, "
-            f"nature, cause; {pct(f.features['coverage_injury_nature'], 0)} of descriptions get a "
-            "nature label); TF-IDF with SVD captures wording beyond the keywords"
+            "In an ablation on the same model, the keyword-rule features "
             + (
-                f". The {' and '.join(dropped_layers(f))} did not improve cross-validation by more "
-                "than the pre-set tolerance, so the final model leaves them out: a result, not "
-                "a failure."
-                if dropped_layers(f)
-                else "; the sentence-embedding clusters also earned their place."
-            ),
+                f"reduced cross-validated RMSLE by {pct(f.text_gain, 0)}."
+                if f.text_gain > 0
+                else "did not reduce cross-validated RMSLE."
+            )
+            + " The rules turn each description into labels an "
+            "adjuster can read and check: body part, injury nature and injury cause "
+            f"({pct(f.features['coverage_injury_nature'], 0)} of descriptions get a nature label). "
+            "An earlier version also tested TF-IDF and sentence-embedding features; they improved "
+            "cross-validated error only slightly beyond the keyword rules, so I removed them to "
+            "keep the model simple and explainable (details in the README).",
             "",
             "**5. How did you avoid leakage?**",
             "",
-            "Every learned step (imputation medians, scaling, one-hot levels, TF-IDF, SVD, KMeans) "
-            "is inside one scikit-learn pipeline fit on training rows only, and refit in each "
-            "fold. Cleaning rules use fixed thresholds. The high-cost threshold comes from the "
-            "training target only. Tests check that the target is never an input and that the "
-            "fitted steps only saw training rows.",
+            "Every learned step (imputation medians, scaling, one-hot levels) is inside one "
+            "scikit-learn pipeline fit on training rows only, and refit in each fold. Cleaning "
+            "rules use fixed thresholds. The high-cost threshold comes from the training target "
+            "only. Tests check that the target is never an input and that the fitted steps only "
+            "saw training rows.",
             "",
             "**6. How do you choose the classifier threshold?**",
             "",

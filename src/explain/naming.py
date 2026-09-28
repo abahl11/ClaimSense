@@ -11,11 +11,8 @@ import numpy as np
 import pandas as pd
 
 from src.config import Config
-from src.features.text_embed import name_clusters
 from src.models.artifacts import CostModel
 
-TFIDF_GROUP = "Description wording (TF-IDF/SVD)"
-CLUSTER_GROUP = "Description meaning (embedding cluster)"
 NUMERIC_BRANCHES = ("numeric", "log", "rules_numeric")
 ONE_HOT_BRANCHES = ("categorical", "rules_categorical")
 TEXT_SOURCES = (
@@ -61,7 +58,7 @@ DISPLAY = {
     "num_body_parts_mentioned": "Body parts mentioned",
     "description_length": "Description length",
 }
-TEXT_GROUPS = {TFIDF_GROUP, CLUSTER_GROUP} | {DISPLAY[s] for s in TEXT_SOURCES}
+TEXT_GROUPS = {DISPLAY[s] for s in TEXT_SOURCES}
 
 
 def logical_names(cfg: Config) -> dict[str, str]:
@@ -72,15 +69,10 @@ def logical_names(cfg: Config) -> dict[str, str]:
     return dict(zip(cfg.resolve(names), names, strict=True))
 
 
-def describe_column(column: str, cfg: Config, clusters: dict[int, str]) -> tuple[str, str, str]:
+def describe_column(column: str, cfg: Config) -> tuple[str, str, str]:
     """(label, group, engineered source column) for one preprocessor output column."""
     branch, feature = column.split("__", 1)
     logical = logical_names(cfg)
-    if branch == "tfidf_svd":
-        return f"TF-IDF component {feature.removeprefix('truncatedsvd')}", TFIDF_GROUP, ""
-    if branch == "embedding_clusters":
-        cluster = int(feature.rsplit("_", 1)[1])
-        return f"Cluster: {clusters.get(cluster, cluster)}", CLUSTER_GROUP, ""
     if branch in ONE_HOT_BRANCHES:
         source = max((s for s in logical if feature.startswith(f"{s}_")), key=len)
         category = feature[len(source) + 1 :].replace("infrequent_sklearn", "rare categories")
@@ -90,19 +82,9 @@ def describe_column(column: str, cfg: Config, clusters: dict[int, str]) -> tuple
     return name, name, feature
 
 
-def cluster_names_of(model: CostModel, cfg: Config) -> dict[int, str]:
-    """Names of the embedding clusters in a fitted preprocessor (empty if not used)."""
-    columns = model.preprocessor.named_steps["columns"]
-    if "embedding_clusters" not in columns.named_transformers_:
-        return {}
-    kmeans = columns.named_transformers_["embedding_clusters"].named_steps["clusters"].kmeans_
-    return name_clusters(kmeans, cfg)
-
-
 def describe_model_columns(model: CostModel, cfg: Config) -> list[tuple[str, str, str]]:
     """Label, group and source column for every column the cost model uses."""
-    clusters = cluster_names_of(model, cfg)
-    return [describe_column(column, cfg, clusters) for column in model.feature_names]
+    return [describe_column(column, cfg) for column in model.feature_names]
 
 
 def group_contributions(values: np.ndarray, groups: list[str]) -> pd.DataFrame:

@@ -8,7 +8,7 @@ cannot influence any decision. Order of work (as in the project brief):
 2. Ridge, random forest and LightGBM on the log target.
 3. LightGBM with Tweedie (several variance powers) and Gamma losses on the raw cost.
 4. Price-drift approaches A-D (``src.models.targets``) for the best log-target model.
-5. Text-layer ablation: no text, Layer 1, Layers 1-2, Layers 1-3.
+5. Text ablation: structured fields alone vs. adding the keyword-rule features.
 6. Optuna tuning of the chosen configuration.
 7. Final fit on the whole training period, 80% prediction intervals from quantile models,
    test-set error analysis, and the saved model artifact.
@@ -52,20 +52,14 @@ BASELINE_FAMILIES = ("median", "initial")
 FAMILY_LABELS = {"ridge": "Ridge", "random_forest": "Random forest", "lightgbm": "LightGBM"}
 # Ablation feature sets, from simplest to richest.
 LAYER_SETS = {
-    "No text features": {"rules": False, "tfidf_svd": False, "embedding_clusters": False},
-    "Layer 1: keyword rules": {"rules": True, "tfidf_svd": False, "embedding_clusters": False},
-    "Layers 1-2: + TF-IDF/SVD": {"rules": True, "tfidf_svd": True, "embedding_clusters": False},
-    "Layers 1-3: + embedding clusters": {
-        "rules": True,
-        "tfidf_svd": True,
-        "embedding_clusters": True,
-    },
+    "No text features": {"rules": False},
+    "Keyword rules": {"rules": True},
 }
 
 
 @dataclass(frozen=True)
 class Candidate:
-    """One model configuration: estimator family, target transform, settings, text layers."""
+    """One model configuration: estimator family, target transform, settings, text features."""
 
     name: str
     group: str
@@ -76,7 +70,7 @@ class Candidate:
     include_gender: bool | None = None  # None follows fairness.exclude_gender in the config
 
     def key(self) -> tuple[Any, ...]:
-        """Identity of the model (switched-on layers are the default, so they are ignored)."""
+        """Identity of the model (switched-on text features are the default, so ignored)."""
         dropped = tuple(sorted(name for name, keep in self.layers if not keep))
         return self.family, self.target, tuple(sorted(self.params)), dropped, self.include_gender
 
@@ -301,7 +295,7 @@ def drift_candidates(base: Candidate) -> list[Candidate]:
 
 
 def ablation_candidates(base: Candidate) -> list[Candidate]:
-    """The base model with each text-layer feature set."""
+    """The base model with and without the keyword-rule features."""
     return [
         replace(base, name=label, group="ablation", layers=tuple(sorted(layers.items())))
         for label, layers in LAYER_SETS.items()
@@ -602,7 +596,7 @@ def write_figures(
     plot_ranked_scores(
         ablation,
         "rmsle",
-        "Text-layer ablation: cross-validated RMSE on the log scale",
+        "Text ablation: cross-validated RMSE on the log scale",
         "regression_ablation",
         cfg,
         "{:.4f}",

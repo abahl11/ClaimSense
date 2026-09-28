@@ -31,15 +31,15 @@ All models share one preprocessing pipeline. *CV* columns are the mean (± stand
 |:----------------------------------------|:----------------|:--------------|:-------------|:----------------|:-----------|:---------------------|:------------|:---------------------------|
 | Baseline A: training median             | 1.4823 ± 0.1614 | -0.106        | 1.7928       | -0.328          | 19,657     | 19,657               | 59,836      | 0.131                      |
 | Baseline B: adjuster's initial estimate | 0.8122 ± 0.0587 | -0.197        | 0.8882       | 0.674           | 11,641     | 11,641               | 56,208      | 0.732                      |
-| Ridge (log target)                      | 0.6210 ± 0.0151 | -0.032        | 0.6207       | 0.841           | 13,334     | 10,955               | 52,242      | 0.997                      |
-| Random forest (log target)              | 0.5943 ± 0.0209 | -0.015        | 0.5808       | 0.861           | 12,300     | 10,343               | 50,731      | 0.930                      |
-| LightGBM (log target)                   | 0.5760 ± 0.0252 | -0.011        | 0.5498       | 0.875           | 13,531     | 10,459               | 51,014      | 1.057                      |
-| LightGBM Tweedie, power 1.5 (raw cost)  | 0.6301 ± 0.0214 | +0.111        | 0.6087       | 0.847           | 11,919     | 11,919               | 51,320      | 0.867                      |
-| LightGBM Tweedie, power 1.7 (raw cost)  | 0.6219 ± 0.0220 | +0.098        | 0.5958       | 0.853           | 11,668     | 11,668               | 51,204      | 0.851                      |
-| LightGBM Tweedie, power 1.9 (raw cost)  | 0.6123 ± 0.0211 | +0.082        | 0.5907       | 0.856           | 11,570     | 11,570               | 51,085      | 0.848                      |
-| LightGBM Gamma (raw cost)               | 0.6137 ± 0.0187 | +0.077        | 0.5910       | 0.856           | 11,469     | 11,469               | 51,041      | 0.839                      |
+| Ridge (log target)                      | 0.6353 ± 0.0164 | -0.037        | 0.6300       | 0.836           | 13,309     | 10,969               | 52,539      | 0.992                      |
+| Random forest (log target)              | 0.6105 ± 0.0241 | -0.009        | 0.5896       | 0.856           | 12,688     | 10,402               | 50,757      | 0.961                      |
+| LightGBM (log target)                   | 0.5916 ± 0.0281 | -0.016        | 0.5596       | 0.871           | 13,640     | 10,467               | 51,112      | 1.065                      |
+| LightGBM Tweedie, power 1.5 (raw cost)  | 0.6558 ± 0.0299 | +0.134        | 0.6154       | 0.843           | 12,033     | 12,033               | 51,364      | 0.876                      |
+| LightGBM Tweedie, power 1.7 (raw cost)  | 0.6438 ± 0.0278 | +0.116        | 0.6060       | 0.848           | 11,900     | 11,900               | 51,212      | 0.871                      |
+| LightGBM Tweedie, power 1.9 (raw cost)  | 0.6361 ± 0.0288 | +0.109        | 0.5930       | 0.855           | 11,680     | 11,680               | 51,070      | 0.853                      |
+| LightGBM Gamma (raw cost)               | 0.6334 ± 0.0262 | +0.100        | 0.5958       | 0.853           | 11,762     | 11,762               | 51,066      | 0.865                      |
 
-**Takeaway.** LightGBM (log target) is the best model family in cross-validation (RMSLE 0.5760), 29% lower than using the adjuster's initial estimate (0.8122); on the test set the gap is 38%. The best raw-cost loss is LightGBM Tweedie, power 1.9 (raw cost) (CV RMSLE 0.6123). These losses predict the mean directly, which sits above the median on the log scale, so RMSLE understates them a little; their test currency metrics are the fairer comparison.
+**Takeaway.** LightGBM (log target) is the best model family in cross-validation (RMSLE 0.5916), 27% lower than using the adjuster's initial estimate (0.8122); on the test set the gap is 37%. The best raw-cost loss is LightGBM Gamma (raw cost) (CV RMSLE 0.6334). These losses predict the mean directly, which sits above the median on the log scale, so RMSLE understates them a little; their test currency metrics are the fairer comparison.
 
 ## 3. Handling the rise in costs over time
 
@@ -47,29 +47,27 @@ EDA showed the median claim cost growing 3.7x across the period, mainly as a pri
 
 | Approach                                   | CV RMSLE   | CV log bias   | Test RMSLE   | Test log bias   | Test total pred / actual   |
 |:-------------------------------------------|:-----------|:--------------|:-------------|:----------------|:---------------------------|
-| LightGBM, A: log cost                      | 0.5760     | -0.011        | 0.5498       | -0.035          | 1.057                      |
-| LightGBM, B: log ratio to initial estimate | 0.5800     | -0.010        | 0.6244       | -0.061          | 1.079                      |
-| LightGBM, C: log cost, trend-adjusted      | 0.5983     | -0.013        | 0.6633       | +0.344          | 1.729                      |
-| LightGBM, D: log ratio, trend-adjusted     | 0.5877     | -0.057        | 0.6166       | +0.009          | 1.165                      |
+| LightGBM, A: log cost                      | 0.5916     | -0.016        | 0.5596       | -0.050          | 1.065                      |
+| LightGBM, B: log ratio to initial estimate | 0.5955     | -0.017        | 0.6298       | -0.068          | 1.088                      |
+| LightGBM, C: log cost, trend-adjusted      | 0.6124     | -0.015        | 0.6662       | +0.333          | 1.707                      |
+| LightGBM, D: log ratio, trend-adjusted     | 0.6029     | -0.056        | 0.6263       | -0.015          | 1.159                      |
 
 ![Bias by accident year](figures/regression_bias_by_year.png)
 
-**Takeaway.** Cross-validation chooses **LightGBM, A: log cost** (CV RMSLE 0.5760). The test set agrees: it is also the best approach there. In the last test year (2005) total predicted over total actual cost is A 0.97, B 0.98, C 1.99, D 1.10.
+**Takeaway.** Cross-validation chooses **LightGBM, A: log cost** (CV RMSLE 0.5916). The test set agrees: it is also the best approach there. In the last test year (2005) total predicted over total actual cost is A 0.98, B 0.99, C 1.96, D 1.10.
 
 ## 4. What the text features add (ablation)
 
-The chosen model and drift approach, refit with each set of description features. Structured fields (including the initial estimate) are always present, so this measures what the free-text description adds on top of them.
+The chosen model and drift approach, refit with and without the keyword-rule features of the description (body part, injury nature, injury cause). Structured fields (including the initial estimate) are always present, so this measures what the free-text description adds on top of them.
 
-![Text-layer ablation](figures/regression_ablation.png)
+![Text ablation](figures/regression_ablation.png)
 
-| Feature set                      | CV RMSLE   | Test RMSLE   | Test R² (log)   |
-|:---------------------------------|:-----------|:-------------|:----------------|
-| No text features                 | 0.7268     | 0.6925       | 0.802           |
-| Layer 1: keyword rules           | 0.5916     | 0.5596       | 0.871           |
-| Layers 1-2: + TF-IDF/SVD         | 0.5768     | 0.5507       | 0.875           |
-| Layers 1-3: + embedding clusters | 0.5760     | 0.5498       | 0.875           |
+| Feature set      | CV RMSLE   | Test RMSLE   | Test R² (log)   |
+|:-----------------|:-----------|:-------------|:----------------|
+| No text features | 0.7268     | 0.6925       | 0.802           |
+| Keyword rules    | 0.5916     | 0.5596       | 0.871           |
 
-**Takeaway.** Adding all three text layers to the structured fields changes CV RMSLE by -20.7% and test RMSLE by -20.6%. Step by step: adding keyword rules: -0.1353; adding TF-IDF/SVD: -0.0147; adding embedding clusters: -0.0008 (CV RMSLE). The final model uses **Layers 1-2: + TF-IDF/SVD**: a richer set is only preferred when it improves CV RMSLE by more than the configured tolerance.
+**Takeaway.** Adding the keyword-rule features to the structured fields changes CV RMSLE by -18.6% and test RMSLE by -19.2%. The final model uses **Keyword rules**: the text features are only kept when they improve CV RMSLE by more than the configured tolerance.
 
 ## 5. Hyperparameter tuning
 
@@ -77,49 +75,49 @@ Optuna (seeded TPE sampler, 25 trials) searched the model settings, scoring each
 
 | Setting           | Value   |
 |:------------------|:--------|
-| learning_rate     | 0.02115 |
-| n_estimators      | 619     |
-| num_leaves        | 24      |
-| min_child_samples | 89      |
-| colsample_bytree  | 0.5396  |
-| subsample         | 0.8566  |
-| reg_lambda        | 0.1271  |
+| learning_rate     | 0.02336 |
+| n_estimators      | 438     |
+| num_leaves        | 52      |
+| min_child_samples | 24      |
+| colsample_bytree  | 0.5145  |
+| subsample         | 0.8512  |
+| reg_lambda        | 8.181   |
 
-**Takeaway.** Tuning moves CV RMSLE from 0.5768 to 0.5702 (-1.2%), a modest gain: the defaults were already reasonable.
+**Takeaway.** Tuning moves CV RMSLE from 0.5916 to 0.5850 (-1.1%), a modest gain: the defaults were already reasonable.
 
 ## 6. Final model on the test set
 
-**LightGBM, tuned (A, Layers 1-2: + TF-IDF/SVD)** with 126 input columns. Expected (mean) costs use a smearing factor of 1.434, estimated from out-of-fold residuals within the training period: exponentiating a log-scale prediction gives roughly the median, which is below the mean for skewed costs, and reserves need the mean.
+**LightGBM, tuned (A, Keyword rules)** with 106 input columns. Expected (mean) costs use a smearing factor of 1.454, estimated from out-of-fold residuals within the training period: exponentiating a log-scale prediction gives roughly the median, which is below the mean for skewed costs, and reserves need the mean.
 
 | Metric                                | Final model   | Adjuster estimate   |
 |:--------------------------------------|:--------------|:--------------------|
-| RMSE, log scale (RMSLE)               | 0.5485        | 0.8882              |
-| R², log scale                         | 0.876         | 0.674               |
-| MAE, expected (mean) prediction       | 13,301        | 11,641              |
-| MAE, typical (median-type) prediction | 10,353        | 11,641              |
-| RMSE (currency)                       | 50,871        | 56,208              |
-| Total predicted / total actual        | 1.042         | 0.732               |
+| RMSE, log scale (RMSLE)               | 0.5562        | 0.8882              |
+| R², log scale                         | 0.872         | 0.674               |
+| MAE, expected (mean) prediction       | 13,321        | 11,641              |
+| MAE, typical (median-type) prediction | 10,319        | 11,641              |
+| RMSE (currency)                       | 50,875        | 56,208              |
+| Total predicted / total actual        | 1.041         | 0.732               |
 
 ![Calibration by decile](figures/regression_calibration_deciles.png)
 
 |   Predicted-cost decile |   Claims | Mean predicted   | Mean actual   | Predicted / actual   |
 |------------------------:|---------:|:-----------------|:--------------|:---------------------|
-|                       1 |     1080 | 1,022            | 683           | 1.50                 |
-|                       2 |     1080 | 1,698            | 1,543         | 1.10                 |
-|                       3 |     1080 | 2,655            | 2,691         | 0.99                 |
-|                       4 |     1080 | 4,453            | 4,788         | 0.93                 |
-|                       5 |     1080 | 8,543            | 10,604        | 0.81                 |
-|                       6 |     1080 | 13,996           | 13,468        | 1.04                 |
-|                       7 |     1080 | 19,460           | 19,512        | 1.00                 |
-|                       8 |     1080 | 31,458           | 30,988        | 1.02                 |
-|                       9 |     1080 | 47,473           | 50,007        | 0.95                 |
-|                      10 |     1080 | 93,071           | 80,603        | 1.15                 |
+|                       1 |     1080 | 1,005            | 690           | 1.46                 |
+|                       2 |     1080 | 1,688            | 1,575         | 1.07                 |
+|                       3 |     1080 | 2,726            | 2,663         | 1.02                 |
+|                       4 |     1080 | 4,457            | 4,843         | 0.92                 |
+|                       5 |     1080 | 8,691            | 11,047        | 0.79                 |
+|                       6 |     1080 | 13,864           | 13,588        | 1.02                 |
+|                       7 |     1080 | 19,065           | 18,838        | 1.01                 |
+|                       8 |     1080 | 31,562           | 31,740        | 0.99                 |
+|                       9 |     1080 | 47,860           | 49,188        | 0.97                 |
+|                      10 |     1080 | 92,732           | 80,715        | 1.15                 |
 
-**Takeaway.** Ranked from cheapest to dearest predicted claims, mean actual cost rises with every decile, and the predicted/actual ratio runs from 0.81 to 1.50. Overall the model books 1.04 of the true total cost, against 0.73 for the adjusters' initial estimates.
+**Takeaway.** Ranked from cheapest to dearest predicted claims, mean actual cost rises with every decile, and the predicted/actual ratio runs from 0.79 to 1.46. Overall the model books 1.04 of the true total cost, against 0.73 for the adjusters' initial estimates.
 
-**On MAE.** MAE is lowest when predicting the median, not the mean. The model's typical (median-type) prediction has MAE 10,353; its expected (mean) prediction, which is what reserves need, has MAE 13,301; the adjusters' estimates have 11,641. The adjusters' lower MAE comes from estimating low across the board (they book 0.73 of the true total), which suits the many small claims but leaves the book under-reserved.
+**On MAE.** MAE is lowest when predicting the median, not the mean. The model's typical (median-type) prediction has MAE 10,319; its expected (mean) prediction, which is what reserves need, has MAE 13,321; the adjusters' estimates have 11,641. The adjusters' lower MAE comes from estimating low across the board (they book 0.73 of the true total), which suits the many small claims but leaves the book under-reserved.
 
-**80% prediction interval** (LightGBM quantile models at 10% and 90% on the same target). Test coverage is **80.9%** against the nominal 80%; 6.8% of claims fall below the interval and 12.4% above it. The typical interval spans a factor of 2.7 from low to high. Coverage by accident year: 2002: 78%, 2003: 80%, 2004: 82%, 2005: 82%.
+**80% prediction interval** (LightGBM quantile models at 10% and 90% on the same target). Test coverage is **80.8%** against the nominal 80%; 6.1% of claims fall below the interval and 13.1% above it. The typical interval spans a factor of 2.7 from low to high. Coverage by accident year: 2002: 78%, 2003: 80%, 2004: 83%, 2005: 81%.
 
 ## 7. Error analysis (test set)
 
@@ -127,75 +125,75 @@ Optuna (seeded TPE sampler, 25 trials) searched the model settings, scoring each
 
 | Actual-cost band   | Claims   | Mean actual   | Mean predicted   | Predicted / actual   | MAE     | RMSLE   |
 |:-------------------|:---------|:--------------|:-----------------|:---------------------|:--------|:--------|
-| Top 1%             | 108      | 331,543       | 76,136           | 0.23                 | 255,407 | 2.206   |
-| Top 1-10%          | 972      | 95,539        | 73,142           | 0.77                 | 49,524  | 1.182   |
-| Bottom 90%         | 9,720    | 10,639        | 16,710           | 1.57                 | 6,989   | 0.375   |
+| Top 1%             | 108      | 331,543       | 76,371           | 0.23                 | 255,172 | 2.223   |
+| Top 1-10%          | 972      | 95,539        | 73,120           | 0.77                 | 49,672  | 1.200   |
+| Bottom 90%         | 9,720    | 10,639        | 16,689           | 1.57                 | 6,999   | 0.380   |
 
-**Takeaway.** For the top 1% of claims by actual cost, the model predicts on average 76,136 against an actual 331,543 (ratio 0.23). The very largest claims are under-predicted: much of what makes a claim huge (complications, litigation, long time off work) happens after it is reported. This is why the high-cost flag is judged on ranking and review capacity rather than on exact amounts.
+**Takeaway.** For the top 1% of claims by actual cost, the model predicts on average 76,371 against an actual 331,543 (ratio 0.23). The very largest claims are under-predicted: much of what makes a claim huge (complications, litigation, long time off work) happens after it is reported. This is why the high-cost flag is judged on ranking and review capacity rather than on exact amounts.
 
 ### By injury nature
 
 | Injury nature   | Claims   | Mean actual   | Mean predicted   | Predicted / actual   | MAE    | RMSLE   |
 |:----------------|:---------|:--------------|:-----------------|:---------------------|:-------|:--------|
-| strain          | 3,412    | 30,705        | 33,025           | 1.08                 | 19,521 | 0.575   |
-| laceration      | 2,338    | 7,518         | 8,082            | 1.08                 | 4,179  | 0.451   |
-| other           | 1,278    | 26,738        | 26,597           | 0.99                 | 16,152 | 0.591   |
-| foreign body    | 617      | 2,793         | 3,421            | 1.22                 | 1,585  | 0.379   |
-| fracture        | 616      | 31,780        | 27,716           | 0.87                 | 20,902 | 0.632   |
-| contusion       | 463      | 12,323        | 13,009           | 1.06                 | 6,978  | 0.543   |
-| sprain          | 447      | 22,273        | 24,221           | 1.09                 | 13,444 | 0.658   |
-| soft tissue     | 308      | 23,261        | 17,467           | 0.75                 | 15,502 | 0.665   |
-| burn            | 275      | 5,879         | 7,344            | 1.25                 | 3,809  | 0.477   |
-| inflammation    | 199      | 33,545        | 33,104           | 0.99                 | 18,893 | 0.628   |
-| puncture        | 186      | 11,674        | 11,804           | 1.01                 | 6,585  | 0.497   |
-| pain            | 180      | 37,889        | 36,002           | 0.95                 | 20,669 | 0.576   |
-| crush           | 153      | 20,173        | 19,313           | 0.96                 | 12,141 | 0.664   |
-| psychological   | 102      | 66,286        | 89,402           | 1.35                 | 45,780 | 0.544   |
+| strain          | 3,412    | 30,705        | 32,433           | 1.06                 | 19,211 | 0.590   |
+| laceration      | 2,338    | 7,518         | 8,407            | 1.12                 | 4,372  | 0.450   |
+| other           | 1,278    | 26,738        | 27,210           | 1.02                 | 16,620 | 0.603   |
+| foreign body    | 617      | 2,793         | 3,558            | 1.27                 | 1,758  | 0.397   |
+| fracture        | 616      | 31,780        | 28,146           | 0.89                 | 21,263 | 0.625   |
+| contusion       | 463      | 12,323        | 13,291           | 1.08                 | 7,312  | 0.560   |
+| sprain          | 447      | 22,273        | 24,768           | 1.11                 | 14,035 | 0.666   |
+| soft tissue     | 308      | 23,261        | 17,483           | 0.75                 | 15,368 | 0.676   |
+| burn            | 275      | 5,879         | 7,670            | 1.30                 | 4,046  | 0.474   |
+| inflammation    | 199      | 33,545        | 33,277           | 0.99                 | 19,130 | 0.637   |
+| puncture        | 186      | 11,674        | 12,288           | 1.05                 | 6,554  | 0.488   |
+| pain            | 180      | 37,889        | 35,756           | 0.94                 | 20,329 | 0.583   |
+| crush           | 153      | 20,173        | 20,001           | 0.99                 | 12,594 | 0.673   |
+| psychological   | 102      | 66,286        | 80,391           | 1.21                 | 38,754 | 0.504   |
 
-**Takeaway.** Log-scale error is lowest for foreign body (0.379) and highest for soft tissue (0.665) among natures with enough claims.
+**Takeaway.** Log-scale error is lowest for foreign body (0.397) and highest for soft tissue (0.676) among natures with enough claims.
 
 ### By body part
 
 | Body part   | Claims   | Mean actual   | Mean predicted   | Predicted / actual   | MAE    | RMSLE   |
 |:------------|:---------|:--------------|:-----------------|:---------------------|:-------|:--------|
-| back        | 1,986    | 32,308        | 32,086           | 0.99                 | 20,467 | 0.590   |
-| multiple    | 1,907    | 23,621        | 25,399           | 1.08                 | 14,560 | 0.592   |
-| finger      | 1,769    | 8,133         | 8,526            | 1.05                 | 4,679  | 0.459   |
-| shoulder    | 815      | 35,903        | 37,546           | 1.05                 | 21,488 | 0.626   |
-| eye         | 798      | 3,090         | 3,893            | 1.26                 | 1,431  | 0.372   |
-| hand        | 661      | 15,629        | 9,833            | 0.63                 | 11,771 | 0.518   |
-| knee        | 573      | 27,132        | 32,121           | 1.18                 | 16,147 | 0.528   |
-| arm         | 516      | 18,012        | 18,099           | 1.00                 | 11,824 | 0.586   |
-| wrist       | 332      | 24,019        | 26,465           | 1.10                 | 13,522 | 0.605   |
-| other       | 265      | 35,086        | 49,079           | 1.40                 | 22,873 | 0.438   |
-| ankle       | 263      | 21,324        | 18,992           | 0.89                 | 12,819 | 0.713   |
-| foot        | 232      | 20,483        | 20,935           | 1.02                 | 13,464 | 0.576   |
-| head        | 230      | 15,462        | 15,902           | 1.03                 | 10,029 | 0.501   |
-| leg         | 202      | 15,275        | 15,584           | 1.02                 | 9,100  | 0.587   |
-| neck        | 142      | 25,485        | 27,024           | 1.06                 | 15,508 | 0.563   |
-| trunk       | 109      | 33,859        | 39,049           | 1.15                 | 16,347 | 0.427   |
+| back        | 1,986    | 32,308        | 32,417           | 1.00                 | 20,638 | 0.591   |
+| multiple    | 1,907    | 23,621        | 24,996           | 1.06                 | 14,601 | 0.617   |
+| finger      | 1,769    | 8,133         | 8,697            | 1.07                 | 4,737  | 0.454   |
+| shoulder    | 815      | 35,903        | 36,204           | 1.01                 | 20,934 | 0.647   |
+| eye         | 798      | 3,090         | 4,016            | 1.30                 | 1,526  | 0.379   |
+| hand        | 661      | 15,629        | 10,157           | 0.65                 | 11,876 | 0.516   |
+| knee        | 573      | 27,132        | 32,454           | 1.20                 | 16,416 | 0.535   |
+| arm         | 516      | 18,012        | 18,388           | 1.02                 | 12,057 | 0.587   |
+| wrist       | 332      | 24,019        | 26,528           | 1.10                 | 13,550 | 0.613   |
+| other       | 265      | 35,086        | 46,065           | 1.31                 | 20,146 | 0.425   |
+| ankle       | 263      | 21,324        | 19,359           | 0.91                 | 12,895 | 0.720   |
+| foot        | 232      | 20,483        | 21,747           | 1.06                 | 13,933 | 0.573   |
+| head        | 230      | 15,462        | 16,368           | 1.06                 | 10,651 | 0.523   |
+| leg         | 202      | 15,275        | 16,564           | 1.08                 | 9,342  | 0.583   |
+| neck        | 142      | 25,485        | 28,064           | 1.10                 | 15,879 | 0.571   |
+| trunk       | 109      | 33,859        | 39,923           | 1.18                 | 16,968 | 0.420   |
 
 ### By weekly wage band
 
 | Weekly wage band   | Claims   | Mean actual   | Mean predicted   | Predicted / actual   | MAE    | RMSLE   |
 |:-------------------|:---------|:--------------|:-----------------|:---------------------|:-------|:--------|
-| <200               | 217      | 17,872        | 17,509           | 0.98                 | 10,802 | 0.583   |
-| 200-300            | 525      | 19,657        | 21,156           | 1.08                 | 12,021 | 0.524   |
-| 300-400            | 503      | 28,630        | 21,318           | 0.74                 | 20,525 | 0.615   |
-| 400-500            | 1,121    | 21,874        | 24,343           | 1.11                 | 13,568 | 0.567   |
-| 500-750            | 6,434    | 17,920        | 18,396           | 1.03                 | 11,182 | 0.538   |
-| 750-1,000          | 1,183    | 29,307        | 33,294           | 1.14                 | 17,815 | 0.540   |
-| 1,000-1,500        | 528      | 41,454        | 45,271           | 1.09                 | 22,947 | 0.563   |
-| 1,500+             | 283      | 24,955        | 25,216           | 1.01                 | 15,237 | 0.608   |
+| <200               | 217      | 17,872        | 18,166           | 1.02                 | 11,275 | 0.595   |
+| 200-300            | 525      | 19,657        | 21,229           | 1.08                 | 11,946 | 0.536   |
+| 300-400            | 503      | 28,630        | 21,528           | 0.75                 | 20,725 | 0.617   |
+| 400-500            | 1,121    | 21,874        | 23,934           | 1.09                 | 13,330 | 0.573   |
+| 500-750            | 6,434    | 17,920        | 18,238           | 1.02                 | 11,131 | 0.548   |
+| 750-1,000          | 1,183    | 29,307        | 33,519           | 1.14                 | 17,816 | 0.542   |
+| 1,000-1,500        | 528      | 41,454        | 46,256           | 1.12                 | 23,927 | 0.566   |
+| 1,500+             | 283      | 24,955        | 25,945           | 1.04                 | 15,697 | 0.606   |
 
 ### By accident year
 
 | Accident year   | Claims   | Mean actual   | Mean predicted   | Predicted / actual   | MAE    | RMSLE   |
 |:----------------|:---------|:--------------|:-----------------|:---------------------|:-------|:--------|
-| 2002            | 1,793    | 16,434        | 18,097           | 1.10                 | 10,585 | 0.544   |
-| 2003            | 2,978    | 17,764        | 19,813           | 1.12                 | 11,800 | 0.552   |
-| 2004            | 3,032    | 22,339        | 24,041           | 1.08                 | 14,014 | 0.540   |
-| 2005            | 2,997    | 27,354        | 25,823           | 0.94                 | 15,697 | 0.556   |
+| 2002            | 1,793    | 16,434        | 18,076           | 1.10                 | 10,487 | 0.546   |
+| 2003            | 2,978    | 17,764        | 19,723           | 1.11                 | 11,764 | 0.562   |
+| 2004            | 3,032    | 22,339        | 23,931           | 1.07                 | 13,921 | 0.547   |
+| 2005            | 2,997    | 27,354        | 25,972           | 0.95                 | 15,958 | 0.566   |
 
 ## 8. High-cost claim flag (classification)
 
@@ -204,9 +202,9 @@ A claim is **high-cost** if its ultimate cost is at least 16,406, the 90th perce
 | Model                                     | CV PR-AUC     | CV ROC-AUC   |
 |:------------------------------------------|:--------------|:-------------|
 | Baseline: rank by initial estimate        | 0.758 ± 0.105 | 0.911        |
-| Rank by regression model's predicted cost | 0.797 ± 0.106 | 0.926        |
-| Logistic regression                       | 0.774 ± 0.107 | 0.915        |
-| LightGBM (class-weighted)                 | 0.780 ± 0.113 | 0.914        |
+| Rank by regression model's predicted cost | 0.794 ± 0.105 | 0.924        |
+| Logistic regression                       | 0.774 ± 0.105 | 0.915        |
+| LightGBM (class-weighted)                 | 0.781 ± 0.110 | 0.914        |
 
 **Chosen: Rank by regression model's predicted cost.** Neither dedicated classifier beat ranking claims by the cost model's own predicted cost in cross-validation (it beats Logistic regression in 5 of 5 folds, LightGBM (class-weighted) in 5 of 5 folds). A classifier only sees whether a claim crossed the threshold, while the regression learns from the full cost, so the flag reuses the cost model's prediction and turns it into a probability with a logistic calibration: one model serves both the reserve and the flag.
 
@@ -219,11 +217,11 @@ A claim is **high-cost** if its ultimate cost is at least 16,406, the 90th perce
 | Model                                     | PR-AUC   | ROC-AUC   | Recall, top 5%   | Recall, top 10%   | Recall, top 20%   | Precision, top 10%   |
 |:------------------------------------------|:---------|:----------|:-----------------|:------------------|:------------------|:---------------------|
 | Baseline: rank by initial estimate        | 0.943    | 0.965     | 16.1%            | 32.2%             | 63.2%             | 100.0%               |
-| Rank by regression model's predicted cost | 0.959    | 0.972     | 16.1%            | 32.2%             | 64.4%             | 100.0%               |
-| Logistic regression                       | 0.950    | 0.968     | 16.1%            | 32.2%             | 64.0%             | 100.0%               |
-| LightGBM (class-weighted)                 | 0.952    | 0.967     | 16.1%            | 32.2%             | 64.3%             | 100.0%               |
+| Rank by regression model's predicted cost | 0.958    | 0.972     | 16.1%            | 32.2%             | 64.4%             | 100.0%               |
+| Logistic regression                       | 0.951    | 0.968     | 16.1%            | 32.2%             | 63.9%             | 100.0%               |
+| LightGBM (class-weighted)                 | 0.954    | 0.968     | 16.1%            | 32.2%             | 64.3%             | 100.0%               |
 
-**Takeaway.** Reviewing the top 10% of claims, the chosen flag catches 32.2% of all high-cost claims, against 32.2% when ranking by the adjuster's initial estimate, and 100.0% of the reviewed claims are genuinely high-cost. With 31.0% of test claims high-cost, reviewing 10% can catch at most 32.2% of them, and every method's PR-AUC lies within 0.016 of the others: after the price rise so many claims cross the fixed threshold that almost any ranking finds them. The relative label below is the sharper test.
+**Takeaway.** Reviewing the top 10% of claims, the chosen flag catches 32.2% of all high-cost claims, against 32.2% when ranking by the adjuster's initial estimate, and 100.0% of the reviewed claims are genuinely high-cost. With 31.0% of test claims high-cost, reviewing 10% can catch at most 32.2% of them, and every method's PR-AUC lies within 0.015 of the others: after the price rise so many claims cross the fixed threshold that almost any ranking finds them. The relative label below is the sharper test.
 
 ### Test set, relative label: top 10% of cost within each accident year
 
@@ -232,39 +230,37 @@ Every candidate refit (where it learns) on the relative label. This removes the 
 | Model                                     | PR-AUC   | ROC-AUC   | Recall, top 5%   | Recall, top 10%   | Recall, top 20%   | Precision, top 10%   |
 |:------------------------------------------|:---------|:----------|:-----------------|:------------------|:------------------|:---------------------|
 | Baseline: rank by initial estimate        | 0.567    | 0.888     | 34.1%            | 54.8%             | 72.6%             | 54.9%                |
-| Rank by regression model's predicted cost | 0.590    | 0.898     | 35.4%            | 55.3%             | 75.4%             | 55.4%                |
-| Logistic regression                       | 0.592    | 0.896     | 35.8%            | 54.5%             | 74.0%             | 54.6%                |
-| LightGBM (class-weighted)                 | 0.545    | 0.889     | 34.6%            | 54.9%             | 74.0%             | 55.0%                |
+| Rank by regression model's predicted cost | 0.589    | 0.897     | 35.4%            | 54.9%             | 74.7%             | 55.0%                |
+| Logistic regression                       | 0.591    | 0.895     | 35.9%            | 54.6%             | 73.8%             | 54.7%                |
+| LightGBM (class-weighted)                 | 0.539    | 0.889     | 34.6%            | 55.1%             | 73.5%             | 55.2%                |
 
-**Takeaway.** On the relative label (base rate 10.0%), reviewing the top 10% of claims catches 55.3% of the relatively severe claims with the chosen flag, against 54.8% when ranking by the adjuster's initial estimate (PR-AUC 0.590 vs 0.567). The gain is marginal: the adjuster's initial estimate already carries most of the signal for *ranking* claims by severity. The model's value is elsewhere: accurate cost levels and totals, an uncertainty range, and drivers.
+**Takeaway.** On the relative label (base rate 10.0%), reviewing the top 10% of claims catches 54.9% of the relatively severe claims with the chosen flag, against 54.8% when ranking by the adjuster's initial estimate (PR-AUC 0.589 vs 0.567). The gain is marginal: the adjuster's initial estimate already carries most of the signal for *ranking* claims by severity. The model's value is elsewhere: accurate cost levels and totals, an uncertainty range, and drivers.
 
 ### Threshold and calibration
 
-The flag threshold is the calibrated probability at which 10% of the latest training claims would be flagged: **0.803**. On the test set it flags 21.1% of claims (precision 99.7%, recall 67.8%). That is more than 10% because more test claims really are expensive; a team with fixed capacity would instead review the top-ranked claims each period, as in the capacity table above.
+The flag threshold is the calibrated probability at which 10% of the latest training claims would be flagged: **0.793**. On the test set it flags 21.2% of claims (precision 99.7%, recall 68.0%). That is more than 10% because more test claims really are expensive; a team with fixed capacity would instead review the top-ranked claims each period, as in the capacity table above.
 
 ![Reliability curves](figures/classifier_reliability.png)
 
-**Calibration.** Raw scores are turned into probabilities by a logistic calibration fit on the latest training claims (out of time). On the test set the calibrated Brier score is 0.0557, against 0.2141 for always predicting the test base rate. Calibrated probabilities average 31.4% on the test set against an observed high-cost rate of 31.0%, so the calibration carried over to the more expensive test period (the scores rise with the price level through the cost-related inputs).
+**Calibration.** Raw scores are turned into probabilities by a logistic calibration fit on the latest training claims (out of time). On the test set the calibrated Brier score is 0.0555, against 0.2141 for always predicting the test base rate. Calibrated probabilities average 31.0% on the test set against an observed high-cost rate of 31.0%, so the calibration carried over to the more expensive test period (the scores rise with the price level through the cost-related inputs).
 
 ## Appendix: every model evaluated
 
 One row per distinct model (a configuration that appears in several stages is listed once, under its first name).
 
-| Model                                         | CV RMSLE        | CV log bias   | Test RMSLE   | Test R² (log)   | Test MAE   | Test MAE (typical)   | Test RMSE   | Test total pred / actual   |
-|:----------------------------------------------|:----------------|:--------------|:-------------|:----------------|:-----------|:---------------------|:------------|:---------------------------|
-| Baseline A: training median                   | 1.4823 ± 0.1614 | -0.106        | 1.7928       | -0.328          | 19,657     | 19,657               | 59,836      | 0.131                      |
-| Baseline B: adjuster's initial estimate       | 0.8122 ± 0.0587 | -0.197        | 0.8882       | 0.674           | 11,641     | 11,641               | 56,208      | 0.732                      |
-| Ridge (log target)                            | 0.6210 ± 0.0151 | -0.032        | 0.6207       | 0.841           | 13,334     | 10,955               | 52,242      | 0.997                      |
-| Random forest (log target)                    | 0.5943 ± 0.0209 | -0.015        | 0.5808       | 0.861           | 12,300     | 10,343               | 50,731      | 0.930                      |
-| LightGBM (log target)                         | 0.5760 ± 0.0252 | -0.011        | 0.5498       | 0.875           | 13,531     | 10,459               | 51,014      | 1.057                      |
-| LightGBM Tweedie, power 1.5 (raw cost)        | 0.6301 ± 0.0214 | +0.111        | 0.6087       | 0.847           | 11,919     | 11,919               | 51,320      | 0.867                      |
-| LightGBM Tweedie, power 1.7 (raw cost)        | 0.6219 ± 0.0220 | +0.098        | 0.5958       | 0.853           | 11,668     | 11,668               | 51,204      | 0.851                      |
-| LightGBM Tweedie, power 1.9 (raw cost)        | 0.6123 ± 0.0211 | +0.082        | 0.5907       | 0.856           | 11,570     | 11,570               | 51,085      | 0.848                      |
-| LightGBM Gamma (raw cost)                     | 0.6137 ± 0.0187 | +0.077        | 0.5910       | 0.856           | 11,469     | 11,469               | 51,041      | 0.839                      |
-| LightGBM, B: log ratio to initial estimate    | 0.5800 ± 0.0253 | -0.010        | 0.6244       | 0.839           | 13,939     | 10,668               | 54,442      | 1.079                      |
-| LightGBM, C: log cost, trend-adjusted         | 0.5983 ± 0.0236 | -0.013        | 0.6633       | 0.818           | 24,127     | 15,635               | 61,032      | 1.729                      |
-| LightGBM, D: log ratio, trend-adjusted        | 0.5877 ± 0.0191 | -0.057        | 0.6166       | 0.843           | 15,083     | 10,997               | 55,664      | 1.165                      |
-| No text features                              | 0.7268 ± 0.0374 | -0.007        | 0.6925       | 0.802           | 15,882     | 10,934               | 52,146      | 1.196                      |
-| Layer 1: keyword rules                        | 0.5916 ± 0.0281 | -0.016        | 0.5596       | 0.871           | 13,640     | 10,467               | 51,112      | 1.065                      |
-| Layers 1-2: + TF-IDF/SVD                      | 0.5768 ± 0.0250 | -0.010        | 0.5507       | 0.875           | 13,538     | 10,472               | 51,050      | 1.057                      |
-| LightGBM, tuned (A, Layers 1-2: + TF-IDF/SVD) | 0.5702 ± 0.0209 | -0.010        | 0.5485       | 0.876           | 13,301     | 10,353               | 50,871      | 1.042                      |
+| Model                                      | CV RMSLE        | CV log bias   | Test RMSLE   | Test R² (log)   | Test MAE   | Test MAE (typical)   | Test RMSE   | Test total pred / actual   |
+|:-------------------------------------------|:----------------|:--------------|:-------------|:----------------|:-----------|:---------------------|:------------|:---------------------------|
+| Baseline A: training median                | 1.4823 ± 0.1614 | -0.106        | 1.7928       | -0.328          | 19,657     | 19,657               | 59,836      | 0.131                      |
+| Baseline B: adjuster's initial estimate    | 0.8122 ± 0.0587 | -0.197        | 0.8882       | 0.674           | 11,641     | 11,641               | 56,208      | 0.732                      |
+| Ridge (log target)                         | 0.6353 ± 0.0164 | -0.037        | 0.6300       | 0.836           | 13,309     | 10,969               | 52,539      | 0.992                      |
+| Random forest (log target)                 | 0.6105 ± 0.0241 | -0.009        | 0.5896       | 0.856           | 12,688     | 10,402               | 50,757      | 0.961                      |
+| LightGBM (log target)                      | 0.5916 ± 0.0281 | -0.016        | 0.5596       | 0.871           | 13,640     | 10,467               | 51,112      | 1.065                      |
+| LightGBM Tweedie, power 1.5 (raw cost)     | 0.6558 ± 0.0299 | +0.134        | 0.6154       | 0.843           | 12,033     | 12,033               | 51,364      | 0.876                      |
+| LightGBM Tweedie, power 1.7 (raw cost)     | 0.6438 ± 0.0278 | +0.116        | 0.6060       | 0.848           | 11,900     | 11,900               | 51,212      | 0.871                      |
+| LightGBM Tweedie, power 1.9 (raw cost)     | 0.6361 ± 0.0288 | +0.109        | 0.5930       | 0.855           | 11,680     | 11,680               | 51,070      | 0.853                      |
+| LightGBM Gamma (raw cost)                  | 0.6334 ± 0.0262 | +0.100        | 0.5958       | 0.853           | 11,762     | 11,762               | 51,066      | 0.865                      |
+| LightGBM, B: log ratio to initial estimate | 0.5955 ± 0.0286 | -0.017        | 0.6298       | 0.836           | 14,044     | 10,653               | 54,035      | 1.088                      |
+| LightGBM, C: log cost, trend-adjusted      | 0.6124 ± 0.0272 | -0.015        | 0.6662       | 0.817           | 23,692     | 15,163               | 59,950      | 1.707                      |
+| LightGBM, D: log ratio, trend-adjusted     | 0.6029 ± 0.0208 | -0.056        | 0.6263       | 0.838           | 15,004     | 10,941               | 55,222      | 1.159                      |
+| No text features                           | 0.7268 ± 0.0374 | -0.007        | 0.6925       | 0.802           | 15,882     | 10,934               | 52,146      | 1.196                      |
+| LightGBM, tuned (A, Keyword rules)         | 0.5850 ± 0.0240 | -0.012        | 0.5562       | 0.872           | 13,321     | 10,319               | 50,875      | 1.041                      |

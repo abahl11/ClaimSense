@@ -8,7 +8,6 @@ import pytest
 
 from src.config import Config, load_config
 from src.data.clean import clean_claims
-from src.features import text_embed
 
 # One plausible claim, keyed by logical column name. Tests override single fields.
 VALID_CLAIM = {
@@ -71,21 +70,3 @@ def small_claims(cfg: Config, make_claims: Callable[..., pd.DataFrame]) -> pd.Da
     ]
     overrides[0]["hours_per_week"] = 0.0  # becomes missing, then imputed
     return clean_claims(make_claims(*overrides), cfg).data
-
-
-@pytest.fixture
-def fake_embeddings(monkeypatch: pytest.MonkeyPatch) -> list[list[str]]:
-    """Replace the sentence-transformer with deterministic pseudo-embeddings.
-
-    Returns the list of text batches that were embedded, so tests can check which rows a
-    fitted step saw.
-    """
-    calls: list[list[str]] = []
-
-    def fake(texts: list[str], *args: object, **kwargs: object) -> np.ndarray:
-        calls.append(list(texts))
-        seeds = [sum(map(ord, text)) for text in texts]
-        return np.array([np.random.default_rng(seed).normal(size=8) for seed in seeds])
-
-    monkeypatch.setattr(text_embed, "embed_texts", fake)
-    return calls

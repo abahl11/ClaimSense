@@ -2,11 +2,11 @@
 
 The preprocessor is fit once per split, on that split's training rows only, and the
 transformed matrices are shared by every model evaluated on the split. This is safe because
-preprocessing never looks at the target: medians, scalers, one-hot levels, TF-IDF, SVD and
-KMeans are all unsupervised. Only the regressors and classifiers use the target, and each
-of those is fit on the split's training rows alone.
+preprocessing never looks at the target: medians, scalers and one-hot levels are all
+unsupervised. Only the regressors and classifiers use the target, and each of those is fit on
+the split's training rows alone.
 
-Matrices always contain every text layer; ablations drop columns
+Matrices always contain the keyword-rule columns; the ablation drops them
 (:func:`src.features.build.select_columns`).
 """
 
@@ -35,8 +35,6 @@ FINGERPRINT_SECTIONS = (
     "features",
     "text_layers",
     "text_rules",
-    "tfidf",
-    "embeddings",
 )
 
 

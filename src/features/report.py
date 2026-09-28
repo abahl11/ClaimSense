@@ -1,9 +1,7 @@
-"""Builds reports/features.md: feature catalogue, taxonomy coverage and the text layers.
+"""Builds reports/features.md: feature catalogue, keyword-taxonomy coverage, model matrix.
 
-Everything is computed on training claims only (accidents before the time-split cutoff):
-the choice of k for the embedding clusters, the evidence behind the placeholder-estimate
-flag, and every coverage figure. Embeddings are computed for all descriptions (the model is
-pretrained and learns nothing from our data), so later stages can reuse the cache.
+Everything is computed on training claims only (accidents before the time-split cutoff): the
+evidence behind the placeholder-estimate flag and every coverage figure.
 """
 
 from __future__ import annotations
@@ -14,8 +12,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
 
 from src.analysis.summaries import CLAIMS, MEDIAN, SHARE, group_summary, readable
 from src.config import Config
@@ -27,7 +23,6 @@ from src.features.build import (
     model_input_columns,
 )
 from src.features.tabular import engineer_features
-from src.features.text_embed import embeddings_for, name_clusters, tfidf_svd
 from src.features.text_rules import TAXONOMY_FIELDS, coverage
 from src.models.split import train_test_split_by_time
 from src.reporting.outputs import (
@@ -38,11 +33,9 @@ from src.reporting.outputs import (
     write_json,
     write_text,
 )
-from src.reporting.plots import hbar, new_figure, save_figure, series_color
+from src.reporting.plots import hbar, new_figure, save_figure
 
 logger = logging.getLogger(__name__)
-
-CLUSTER = "embedding_cluster"
 
 # Plain-language definition and rationale for every model input (logical names).
 # Values in braces are filled from the config when the report is written.
@@ -225,7 +218,6 @@ def catalogue(train_features: pd.DataFrame, cfg: Config) -> pd.DataFrame:
 
 def catalogue_section(train_features: pd.DataFrame, cfg: Config) -> list[str]:
     """Markdown for the feature catalogue."""
-    e, t = cfg["embeddings"], cfg["tfidf"]
     return [
         "## 1. Feature catalogue",
         "",
@@ -234,9 +226,6 @@ def catalogue_section(train_features: pd.DataFrame, cfg: Config) -> list[str]:
         "inputs.",
         "",
         markdown_table(catalogue(train_features, cfg)),
-        "",
-        f"Text layers 2 and 3 add **{t['svd_components']} TF-IDF/SVD components** and a "
-        f"**one-hot embedding cluster** (k = {e['n_clusters']}); see sections 4 and 5.",
         "",
     ]
 
@@ -288,7 +277,7 @@ def estimate_flag_section(train: pd.DataFrame, cfg: Config) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Layer 1: keyword taxonomy
+# Keyword taxonomy
 # ---------------------------------------------------------------------------
 
 
@@ -303,7 +292,7 @@ def taxonomy_section(
         {"Field": list(covered.index), "Labelled (not 'other')": [f"{v:.1%}" for v in covered]}
     )
     blocks = [
-        "## 3. Layer 1: keyword taxonomy",
+        "## 3. Keyword taxonomy",
         "",
         "Rules in `src/features/text_rules.py`; keyword lists in `config/config.yaml`. Keywords "
         "match whole words. For nature and cause the categories are in priority order, so a "
@@ -320,6 +309,12 @@ def taxonomy_section(
         "",
         "**Coverage on training claims**",
         "",
+        figure_markdown(
+            plot_coverage(covered, cfg),
+            cfg.path("features_report"),
+            "Keyword taxonomy coverage",
+            coverage_takeaway(covered, other),
+        ),
         markdown_table(coverage_table),
         "",
     ]
@@ -347,255 +342,29 @@ def taxonomy_section(
     return blocks, {f"coverage_{k}": float(v) for k, v in covered.items()}
 
 
-# ---------------------------------------------------------------------------
-# Layer 2: TF-IDF + SVD
-# ---------------------------------------------------------------------------
-
-
-def tfidf_section(train: pd.DataFrame, cfg: Config) -> tuple[list[str], dict[str, float]]:
-    """Vocabulary size, variance explained and the leading terms of the first components."""
-    t = cfg["tfidf"]
-    pipe = tfidf_svd(cfg).fit(train[cfg.col("description")])
-    vocabulary = pipe.named_steps["tfidf"].get_feature_names_out()
-    svd = pipe.named_steps["svd"]
-    explained = float(svd.explained_variance_ratio_.sum())
-    rows = []
-    for i, weights in enumerate(svd.components_[: t["components_shown"]]):
-        top = np.argsort(np.abs(weights))[::-1][: t["top_terms_shown"]]
-        rows.append({"Component": f"svd{i}", "Strongest terms": ", ".join(vocabulary[top])})
-    blocks = [
-        "## 4. Layer 2: TF-IDF + truncated SVD",
-        "",
-        f"TF-IDF over words and word pairs (n-grams {tuple(t['ngram_range'])}, terms in at least "
-        f"{t['min_df']} training descriptions) gives a vocabulary of "
-        f"**{len(vocabulary):,} terms**. "
-        f"Truncated SVD compresses it to {t['svd_components']} dense components that together "
-        f"keep **{explained:.0%} of the TF-IDF variance**. This captures wording the fixed "
-        "keyword lists miss, at a size tree models handle easily. Both steps are fit inside the "
-        "pipeline, so the vocabulary never includes words seen only in the test period.",
-        "",
-        markdown_table(pd.DataFrame(rows)),
-        "",
-    ]
-    return blocks, {"tfidf_vocabulary": len(vocabulary), "svd_explained_variance": explained}
-
-
-# ---------------------------------------------------------------------------
-# Layer 3: embedding clusters
-# ---------------------------------------------------------------------------
-
-
-def silhouette_table(vectors: np.ndarray, cfg: Config) -> pd.DataFrame:
-    """Silhouette score (on a sample) and inertia for each candidate k."""
-    e = cfg["embeddings"]
-    rows = []
-    for k in e["k_candidates"]:
-        model = KMeans(n_clusters=k, n_init=e["kmeans_n_init"], random_state=cfg.random_seed)
-        labels = model.fit_predict(vectors)
-        score = silhouette_score(
-            vectors, labels, sample_size=e["silhouette_sample"], random_state=cfg.random_seed
-        )
-        rows.append({"k": k, "Silhouette": float(score), "Inertia": float(model.inertia_)})
-        logger.info("k=%d silhouette=%.4f", k, score)
-    return pd.DataFrame(rows)
-
-
-def plot_silhouette(table: pd.DataFrame, chosen: int | None, cfg: Config) -> Path:
-    """Silhouette score against k, with the chosen k marked."""
-    p = cfg["plots"]
+def plot_coverage(covered: pd.Series, cfg: Config) -> Path:
+    """Share of training descriptions that get a label, for each taxonomy field."""
     fig, ax = new_figure(cfg)
-    ax.plot(
-        table["k"],
-        table["Silhouette"],
-        color=series_color(cfg, 0),
-        marker="o",
-        markersize=5,
-        markeredgecolor=p["surface"],
-        markeredgewidth=1.5,
-    )
-    if chosen is not None:
-        ax.axvline(chosen, color=p["ink_muted"], linewidth=1)
-        ax.text(
-            chosen,
-            1.0,
-            f" chosen k = {chosen}",
-            transform=ax.get_xaxis_transform(),
-            va="top",
-            color=p["ink_secondary"],
-        )
-    ax.set_xticks(table["k"])
-    ax.set_xlabel("Number of clusters (k)")
-    ax.set_ylabel("Silhouette score (higher = better separated)")
-    ax.set_title("KMeans on sentence embeddings of training descriptions")
-    return save_figure(fig, cfg, "features_silhouette")
+    ordered = covered.sort_values()
+    hbar(ax, ordered, readable(pd.Series(ordered.index)), "{:.1%}", cfg)
+    ax.set_title("Keyword taxonomy: share of training descriptions labelled (not 'other')")
+    return save_figure(fig, cfg, "features_taxonomy_coverage")
 
 
-def cluster_top_words(texts: pd.Series, labels: np.ndarray, cfg: Config) -> dict[int, str]:
-    """Words most over-represented in each cluster relative to all descriptions."""
-    e = cfg["embeddings"]
-    words = texts.str.split().map(set)
-    exploded = pd.DataFrame({"word": words, "cluster": labels}).explode("word").dropna()
-    counts = exploded["word"].value_counts()
-    common = counts[counts >= e["min_word_count"]].index
-    exploded = exploded[exploded["word"].isin(common)]
-    overall = counts[common] / len(texts)
-    sizes = pd.Series(labels).value_counts()
-    top = {}
-    for cluster, group in exploded.groupby("cluster"):
-        share = group["word"].value_counts() / sizes[cluster]
-        lift = (share / overall[share.index])[share >= 0.05]
-        top[int(cluster)] = ", ".join(
-            lift.sort_values(ascending=False).index[: e["top_words_per_cluster"]]
-        )
-    return top
-
-
-def cluster_examples(
-    texts: pd.Series, distances: np.ndarray, labels: np.ndarray, n: int
-) -> dict[int, list[str]]:
-    """The descriptions closest to each cluster centre (distinct texts only)."""
-    frame = pd.DataFrame({"text": texts.to_numpy(), "cluster": labels, "distance": distances})
-    frame = frame.drop_duplicates("text").sort_values("distance")
-    return {int(c): g["text"].head(n).tolist() for c, g in frame.groupby("cluster")}
-
-
-def plot_clusters(summary: pd.DataFrame, cfg: Config) -> Path:
-    """Paired bars: share of training claims and median cost per cluster."""
-    fig, (ax_share, ax_cost) = new_figure(cfg, ncols=2, sharey=True)
-    labels = summary["Name"]
-    hbar(ax_share, summary[SHARE], labels, "{:.1%}", cfg)
-    hbar(ax_cost, summary[MEDIAN], labels, "{:,.0f}", cfg)
-    ax_share.invert_yaxis()
-    ax_share.set_title("Embedding cluster: share of training claims")
-    ax_cost.set_title("Embedding cluster: median ultimate cost")
-    return save_figure(fig, cfg, "features_embedding_clusters")
-
-
-def cluster_section(
-    train: pd.DataFrame, vectors: np.ndarray, cfg: Config
-) -> tuple[list[str], dict[str, Any]]:
-    """Choice of k, and a named description of each cluster for the chosen k."""
-    e = cfg["embeddings"]
-    k = e["n_clusters"]
-    report = cfg.path("features_report")
-    table = silhouette_table(vectors, cfg)
-    blocks = [
-        "## 5. Layer 3: sentence-embedding clusters",
-        "",
-        f"Each description is embedded with the pretrained `{e['model_name']}` model (384 numbers "
-        "per description, cached in `data/processed`). The model is never trained on our data, "
-        "so embedding cannot leak information. KMeans then groups training descriptions by "
-        "meaning, and the cluster id becomes a one-hot feature. Only KMeans learns, and inside "
-        "the pipeline it is fit on training rows only.",
-        "",
-        "**Choosing k.** Silhouette measures how much closer each description is to its own "
-        "cluster than to the next one. On short, overlapping texts it is low for every k, so it "
-        "is a guide, not a verdict; the final choice also depends on whether each cluster reads "
-        "as one recognisable kind of claim.",
-        "",
-        figure_markdown(
-            plot_silhouette(table, k, cfg), report, "Silhouette by k", silhouette_takeaway(table, k)
-        ),
-        markdown_table(table, floatfmt=("g", ".4f", ",.0f")),
-        "",
-    ]
-    metrics: dict[str, Any] = {
-        "silhouette": table.set_index("k")["Silhouette"].to_dict(),
-        "n_clusters": k,
-    }
-    if k is None:
-        blocks += ["_k has not been chosen yet (`embeddings.n_clusters` is null)._", ""]
-        return blocks, metrics
-    model = KMeans(n_clusters=k, n_init=e["kmeans_n_init"], random_state=cfg.random_seed).fit(
-        vectors
-    )
-    labels = model.labels_
-    distances = model.transform(vectors)[np.arange(len(labels)), labels]
-    texts = train[cfg.col("description")].reset_index(drop=True)
-    names = name_clusters(model, cfg)
-    frame = train.reset_index(drop=True).assign(**{CLUSTER: labels})
-    summary = group_summary(frame, CLUSTER, cfg.col("target"), np.inf)
-    summary["Name"] = summary[CLUSTER].map(lambda c: names[int(c)])
-    summary = summary.sort_values(CLAIMS, ascending=False)
-    words = cluster_top_words(texts, labels, cfg)
-    examples = cluster_examples(texts, distances, labels, e["examples_per_cluster"])
-    blocks += [
-        choice_text(table, k, cfg),
-        "",
-        figure_markdown(
-            plot_clusters(summary, cfg), report, "Embedding clusters", clusters_takeaway(summary)
-        ),
-    ]
-    for row in summary.to_dict("records"):
-        cluster = int(row[CLUSTER])
-        blocks += [
-            f"### Cluster {cluster}: {row['Name']}",
-            "",
-            f"{row[CLAIMS]:,} training claims ({row[SHARE]:.1%}), median cost "
-            f"{row[MEDIAN]:,.0f}. Most over-represented words: {words.get(cluster, '-')}.",
-            "",
-            *[f"- `{text}`" for text in examples[cluster]],
-            "",
-        ]
-    metrics["clusters"] = {
-        int(r[CLUSTER]): {
-            "name": r["Name"],
-            "claims": int(r[CLAIMS]),
-            "median_cost": float(r[MEDIAN]),
-        }
-        for _, r in summary.iterrows()
-    }
-    return blocks, metrics
-
-
-def choice_text(table: pd.DataFrame, chosen: int, cfg: Config) -> str:
-    """Explain the choice of k from the silhouette table and the manual read."""
-    min_k = cfg["embeddings"]["min_useful_k"]
-    useful = table[table["k"] >= min_k].reset_index(drop=True)
-    position = useful.index[useful["k"] == chosen][0]
-    scores = useful["Silhouette"]
-    neighbours = scores.iloc[max(position - 1, 0) : position + 2].drop(position)
-    peak = bool((scores.iloc[position] >= neighbours).all())
-    peak_text = "a local peak" if peak else "not a local peak"
-    return (
-        f"**Chosen k = {chosen}.** Reading the clusters showed that k below {min_k} merges kinds "
-        "of claim with very different costs (for example knee injuries with ankle sprains), so "
-        f"only k >= {min_k} was considered. Across those values silhouette only moves between "
-        f"{scores.min():.3f} and {scores.max():.3f}, too little to decide on its own; k = "
-        f"{chosen} is {peak_text} in that range and gives clusters that each read as one kind "
-        "of claim. Names were written by reading the descriptions closest to each cluster centre "
-        "(listed below) and its most over-represented words. Each name is tied in the config to "
-        "an anchor description rather than a cluster number, so it follows the meaning."
-    )
-
-
-def silhouette_takeaway(table: pd.DataFrame, chosen: int | None) -> str:
-    """Describe the silhouette curve and where the chosen k sits on it."""
-    best = table.loc[table["Silhouette"].idxmax()]
+def coverage_takeaway(covered: pd.Series, other: str) -> str:
+    """Name the best- and worst-covered fields."""
+    best, worst = covered.idxmax(), covered.idxmin()
     text = (
-        f"Silhouette scores range from {table['Silhouette'].min():.3f} to "
-        f"{table['Silhouette'].max():.3f}, peaking at k = {int(best['k'])}. Scores this low are "
-        "typical for short free-text descriptions, whose topics overlap."
+        f"The rules label {covered[best]:.0%} of descriptions for {best.replace('_', ' ')} "
+        f"but only {covered[worst]:.0%} for {worst.replace('_', ' ')}; the rest stay "
+        f"*{other}*."
     )
-    if chosen is not None:
-        score = table.loc[table["k"] == chosen, "Silhouette"]
-        if len(score):
-            text += f" The chosen k = {chosen} scores {float(score.iloc[0]):.3f}."
+    if worst == "injury_cause":
+        text += (
+            " Cause is the hardest field because many descriptions name the injury but not how "
+            "it happened, which no keyword list can fix."
+        )
     return text
-
-
-def clusters_takeaway(summary: pd.DataFrame) -> str:
-    """Contrast the largest cluster with the dearest and cheapest."""
-    largest = summary.iloc[0]
-    dearest = summary.loc[summary[MEDIAN].idxmax()]
-    cheapest = summary.loc[summary[MEDIAN].idxmin()]
-    return (
-        f"The largest cluster, **{largest['Name']}**, holds {largest[SHARE]:.0%} of training "
-        f"claims. Median cost runs from {cheapest[MEDIAN]:,.0f} (**{cheapest['Name']}**) to "
-        f"{dearest[MEDIAN]:,.0f} (**{dearest['Name']}**), a "
-        f"{dearest[MEDIAN] / cheapest[MEDIAN]:.1f}x "
-        "spread, so the clusters separate cheap and expensive kinds of claim."
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -605,8 +374,6 @@ def clusters_takeaway(summary: pd.DataFrame) -> str:
 
 def matrix_section(train: pd.DataFrame, cfg: Config) -> tuple[list[str], dict[str, Any]]:
     """Fit the full preprocessor on training rows and count output columns per branch."""
-    if cfg["embeddings"]["n_clusters"] is None:
-        return ["## 6. Model matrix", "", "_Available once k is chosen._", ""], {}
     preprocessor = build_preprocessor(cfg).fit(train)
     names = feature_names(preprocessor)
     counts = pd.Series([n.split("__")[0] for n in names]).value_counts()
@@ -616,16 +383,16 @@ def matrix_section(train: pd.DataFrame, cfg: Config) -> tuple[list[str], dict[st
     if target in inputs or any(target in name for name in names):
         raise AssertionError("The target leaked into the model inputs")
     return [
-        "## 6. Model matrix",
+        "## 4. Model matrix",
         "",
-        f"With every text layer switched on, the fitted pipeline turns each claim into "
+        f"With the keyword-rule features switched on, the fitted pipeline turns each claim into "
         f"**{len(names)} columns**:",
         "",
         markdown_table(table),
         "",
-        f"The switches in `text_layers` remove Layer 1, 2 or 3 for the Phase 5 ablation. The "
-        f"target (`{target}`) is not among the {len(inputs)} input columns the pipeline reads, "
-        "a check that also runs in the test suite.",
+        "The `text_layers.rules` switch removes the keyword-rule columns for the Phase 5 "
+        f"ablation. The target (`{target}`) is not among the {len(inputs)} input columns the "
+        "pipeline reads, a check that also runs in the test suite.",
         "",
     ], {"n_model_columns": len(names), "columns_per_branch": counts.to_dict()}
 
@@ -633,17 +400,15 @@ def matrix_section(train: pd.DataFrame, cfg: Config) -> tuple[list[str], dict[st
 def safeguards_blocks() -> list[str]:
     """How this design avoids leakage."""
     return [
-        "## 7. Leakage safeguards",
+        "## 5. Leakage safeguards",
         "",
-        "- **Nothing learned outside the pipeline.** Group medians, scalers, one-hot categories, "
-        "the TF-IDF vocabulary, SVD and KMeans are all steps of one scikit-learn Pipeline. They "
-        "are fit on training rows only, and cross-validation refits them in every fold.",
+        "- **Nothing learned outside the pipeline.** Group medians, scalers and one-hot "
+        "categories are all steps of one scikit-learn Pipeline. They are fit on training rows "
+        "only, and cross-validation refits them in every fold.",
         "- **Fixed rules only before the split.** Cleaning, feature formulas and the keyword "
         "taxonomy use thresholds fixed in the config and learn nothing from the data.",
-        "- **Pretrained embeddings.** The sentence-transformer is used as-is, never trained on "
-        "these claims.",
-        "- **Design decisions on training claims only.** The placeholder-estimate value, the "
-        "coverage iteration and the choice of k all used training claims.",
+        "- **Design decisions on training claims only.** The placeholder-estimate value and the "
+        "keyword-list iterations both used training claims.",
         "- **No target in the inputs.** The target and anything derived from it (such as the "
         "ultimate/initial ratio) are never model inputs.",
         "",
@@ -653,13 +418,9 @@ def safeguards_blocks() -> list[str]:
 def run_features(cfg: Config) -> None:
     """Write ``reports/features.md`` and ``reports/metrics/features.json``."""
     claims = load_clean(cfg)
-    embeddings_for(claims[cfg.col("description")], cfg)  # warm the cache for all claims
     train, _, cutoff = train_test_split_by_time(claims, cfg)
     train_features = engineer_features(train, cfg)
-    vectors = embeddings_for(train[cfg.col("description")], cfg)
     taxonomy_blocks, taxonomy_metrics = taxonomy_section(train_features, cfg)
-    tfidf_blocks, tfidf_metrics = tfidf_section(train, cfg)
-    cluster_blocks, cluster_metrics = cluster_section(train, vectors, cfg)
     matrix_blocks, matrix_metrics = matrix_section(train, cfg)
     blocks = [
         "# Features",
@@ -672,13 +433,11 @@ def run_features(cfg: Config) -> None:
         *catalogue_section(train_features, cfg),
         *estimate_flag_section(train, cfg),
         *taxonomy_blocks,
-        *tfidf_blocks,
-        *cluster_blocks,
         *matrix_blocks,
         *safeguards_blocks(),
     ]
     write_text("\n".join(blocks), cfg.path("features_report"))
     write_json(
-        {**taxonomy_metrics, **tfidf_metrics, **cluster_metrics, **matrix_metrics},
+        {**taxonomy_metrics, **matrix_metrics},
         cfg.path("features_metrics"),
     )
