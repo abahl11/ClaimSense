@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import gc
 import logging
 from collections.abc import Sequence
 from functools import lru_cache
@@ -59,6 +60,12 @@ def load_encoder(model_name: str) -> Any:
 
     logger.info("Loading sentence-transformer %s", model_name)
     return SentenceTransformer(model_name, device="cpu")
+
+
+def release_encoder() -> None:
+    """Free the sentence-transformer once the cache is filled (it is large and not needed again)."""
+    load_encoder.cache_clear()
+    gc.collect()
 
 
 class EmbeddingStore:
@@ -112,6 +119,7 @@ class EmbeddingStore:
             show_progress_bar=False,
             convert_to_numpy=True,
         )
+        release_encoder()
         start = len(self._texts)
         self._texts.update({text: start + i for i, text in enumerate(texts)})
         stacked = [self._vectors, vectors] if len(self._vectors) else [vectors]

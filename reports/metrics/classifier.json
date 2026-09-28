@@ -1,0 +1,480 @@
+{
+  "cost_threshold": 16406.011376,
+  "label_quantile": 0.9,
+  "review_capacity": 0.1,
+  "base_rate": {
+    "train": 0.1,
+    "test": 0.31046296296296294
+  },
+  "cv": {
+    "Baseline: rank by initial estimate": {
+      "pr_auc": 0.7579333185723816,
+      "pr_auc_std": 0.10499429442190576,
+      "roc_auc": 0.9113631433023175,
+      "base_rate": 0.15963441115228416,
+      "folds": [
+        {
+          "pr_auc": 0.5965293768202319,
+          "roc_auc": 0.8592304594061894,
+          "base_rate": 0.10109706985140952
+        },
+        {
+          "pr_auc": 0.7391709292079737,
+          "roc_auc": 0.8998947018165405,
+          "base_rate": 0.15055555555555555
+        },
+        {
+          "pr_auc": 0.7373126717022668,
+          "roc_auc": 0.9164278232668592,
+          "base_rate": 0.10473676899569384
+        },
+        {
+          "pr_auc": 0.7945583463324237,
+          "roc_auc": 0.9226572286120367,
+          "base_rate": 0.16483821691431746
+        },
+        {
+          "pr_auc": 0.9220952687990109,
+          "roc_auc": 0.958605503409961,
+          "base_rate": 0.27694444444444444
+        }
+      ]
+    },
+    "Rank by regression model's predicted cost": {
+      "pr_auc": 0.7968506966844302,
+      "pr_auc_std": 0.10555925772567112,
+      "roc_auc": 0.9255120011935075,
+      "base_rate": 0.15963441115228416,
+      "folds": [
+        {
+          "pr_auc": 0.6237570866763655,
+          "roc_auc": 0.8813223313068823,
+          "base_rate": 0.10109706985140952
+        },
+        {
+          "pr_auc": 0.7839181645784461,
+          "roc_auc": 0.9128480677383622,
+          "base_rate": 0.15055555555555555
+        },
+        {
+          "pr_auc": 0.7759727975557006,
+          "roc_auc": 0.924944387625964,
+          "base_rate": 0.10473676899569384
+        },
+        {
+          "pr_auc": 0.8570325865436478,
+          "roc_auc": 0.9425548474508652,
+          "base_rate": 0.16483821691431746
+        },
+        {
+          "pr_auc": 0.9435728480679912,
+          "roc_auc": 0.9658903718454634,
+          "base_rate": 0.27694444444444444
+        }
+      ]
+    },
+    "Logistic regression": {
+      "pr_auc": 0.7737767631833946,
+      "pr_auc_std": 0.10692401165095874,
+      "roc_auc": 0.9152810542711117,
+      "base_rate": 0.15963441115228416,
+      "folds": [
+        {
+          "pr_auc": 0.6023358703839898,
+          "roc_auc": 0.8696981799291392,
+          "base_rate": 0.10109706985140952
+        },
+        {
+          "pr_auc": 0.7595751209064716,
+          "roc_auc": 0.9043082206492439,
+          "base_rate": 0.15055555555555555
+        },
+        {
+          "pr_auc": 0.7459370102189783,
+          "roc_auc": 0.9114718913145922,
+          "base_rate": 0.10473676899569384
+        },
+        {
+          "pr_auc": 0.8357537503828353,
+          "roc_auc": 0.9333582494538859,
+          "base_rate": 0.16483821691431746
+        },
+        {
+          "pr_auc": 0.9252820640246977,
+          "roc_auc": 0.9575687300086969,
+          "base_rate": 0.27694444444444444
+        }
+      ]
+    },
+    "LightGBM (class-weighted)": {
+      "pr_auc": 0.7798499197072187,
+      "pr_auc_std": 0.11287200579429411,
+      "roc_auc": 0.9137399599633211,
+      "base_rate": 0.15963441115228416,
+      "folds": [
+        {
+          "pr_auc": 0.5955223167745853,
+          "roc_auc": 0.8532774771960622,
+          "base_rate": 0.10109706985140952
+        },
+        {
+          "pr_auc": 0.760979879659247,
+          "roc_auc": 0.8994430252510504,
+          "base_rate": 0.15055555555555555
+        },
+        {
+          "pr_auc": 0.7610030905775237,
+          "roc_auc": 0.9185126956722152,
+          "base_rate": 0.10473676899569384
+        },
+        {
+          "pr_auc": 0.8441783227636827,
+          "roc_auc": 0.9360028789886221,
+          "base_rate": 0.16483821691431746
+        },
+        {
+          "pr_auc": 0.9375659887610548,
+          "roc_auc": 0.9614637227086561,
+          "base_rate": 0.27694444444444444
+        }
+      ]
+    }
+  },
+  "chosen": "Rank by regression model's predicted cost",
+  "chosen_kind": "cost_rank",
+  "test": {
+    "Baseline: rank by initial estimate": {
+      "pr_auc": 0.9427317686088829,
+      "roc_auc": 0.9650984864070348,
+      "base_rate": 0.31046296296296294,
+      "capacity": [
+        {
+          "capacity": 0.05,
+          "reviewed": 540,
+          "caught": 540,
+          "recall": 0.16104980614375186,
+          "precision": 1.0,
+          "lift": 3.2209961228750377
+        },
+        {
+          "capacity": 0.1,
+          "reviewed": 1080,
+          "caught": 1080,
+          "recall": 0.3220996122875037,
+          "precision": 1.0,
+          "lift": 3.2209961228750377
+        },
+        {
+          "capacity": 0.2,
+          "reviewed": 2160,
+          "caught": 2119,
+          "recall": 0.6319713689233523,
+          "precision": 0.9810185185185185,
+          "lift": 3.1598568446167614
+        }
+      ]
+    },
+    "Rank by regression model's predicted cost": {
+      "pr_auc": 0.9585458899876204,
+      "roc_auc": 0.9720439390141471,
+      "base_rate": 0.31046296296296294,
+      "capacity": [
+        {
+          "capacity": 0.05,
+          "reviewed": 540,
+          "caught": 540,
+          "recall": 0.16104980614375186,
+          "precision": 1.0,
+          "lift": 3.2209961228750377
+        },
+        {
+          "capacity": 0.1,
+          "reviewed": 1080,
+          "caught": 1080,
+          "recall": 0.3220996122875037,
+          "precision": 1.0,
+          "lift": 3.2209961228750377
+        },
+        {
+          "capacity": 0.2,
+          "reviewed": 2160,
+          "caught": 2159,
+          "recall": 0.6439009841932598,
+          "precision": 0.999537037037037,
+          "lift": 3.219504920966299
+        }
+      ]
+    },
+    "Logistic regression": {
+      "pr_auc": 0.950341642619521,
+      "roc_auc": 0.9678443443919895,
+      "base_rate": 0.31046296296296294,
+      "capacity": [
+        {
+          "capacity": 0.05,
+          "reviewed": 540,
+          "caught": 540,
+          "recall": 0.16104980614375186,
+          "precision": 1.0,
+          "lift": 3.2209961228750377
+        },
+        {
+          "capacity": 0.1,
+          "reviewed": 1080,
+          "caught": 1080,
+          "recall": 0.3220996122875037,
+          "precision": 1.0,
+          "lift": 3.2209961228750377
+        },
+        {
+          "capacity": 0.2,
+          "reviewed": 2160,
+          "caught": 2147,
+          "recall": 0.6403220996122875,
+          "precision": 0.9939814814814815,
+          "lift": 3.2016104980614375
+        }
+      ]
+    },
+    "LightGBM (class-weighted)": {
+      "pr_auc": 0.9524741773333983,
+      "roc_auc": 0.9668551891363448,
+      "base_rate": 0.31046296296296294,
+      "capacity": [
+        {
+          "capacity": 0.05,
+          "reviewed": 540,
+          "caught": 540,
+          "recall": 0.16104980614375186,
+          "precision": 1.0,
+          "lift": 3.2209961228750377
+        },
+        {
+          "capacity": 0.1,
+          "reviewed": 1080,
+          "caught": 1080,
+          "recall": 0.3220996122875037,
+          "precision": 1.0,
+          "lift": 3.2209961228750377
+        },
+        {
+          "capacity": 0.2,
+          "reviewed": 2160,
+          "caught": 2157,
+          "recall": 0.6433045034297644,
+          "precision": 0.9986111111111111,
+          "lift": 3.2165225171488223
+        }
+      ]
+    }
+  },
+  "relative_label": {
+    "Baseline: rank by initial estimate": {
+      "pr_auc": 0.5672389494498865,
+      "roc_auc": 0.8883126153841473,
+      "base_rate": 0.10018518518518518,
+      "capacity": [
+        {
+          "capacity": 0.05,
+          "reviewed": 540,
+          "caught": 369,
+          "recall": 0.3410351201478743,
+          "precision": 0.6833333333333333,
+          "lift": 6.820702402957487
+        },
+        {
+          "capacity": 0.1,
+          "reviewed": 1080,
+          "caught": 593,
+          "recall": 0.5480591497227357,
+          "precision": 0.549074074074074,
+          "lift": 5.480591497227357
+        },
+        {
+          "capacity": 0.2,
+          "reviewed": 2160,
+          "caught": 786,
+          "recall": 0.7264325323475046,
+          "precision": 0.3638888888888889,
+          "lift": 3.632162661737523
+        }
+      ]
+    },
+    "Rank by regression model's predicted cost": {
+      "pr_auc": 0.5896852621802249,
+      "roc_auc": 0.8983385063219005,
+      "base_rate": 0.10018518518518518,
+      "capacity": [
+        {
+          "capacity": 0.05,
+          "reviewed": 540,
+          "caught": 383,
+          "recall": 0.3539741219963031,
+          "precision": 0.7092592592592593,
+          "lift": 7.079482439926063
+        },
+        {
+          "capacity": 0.1,
+          "reviewed": 1080,
+          "caught": 598,
+          "recall": 0.5526802218114603,
+          "precision": 0.5537037037037037,
+          "lift": 5.526802218114603
+        },
+        {
+          "capacity": 0.2,
+          "reviewed": 2160,
+          "caught": 816,
+          "recall": 0.7541589648798521,
+          "precision": 0.37777777777777777,
+          "lift": 3.770794824399261
+        }
+      ]
+    },
+    "Logistic regression": {
+      "pr_auc": 0.5917444490066616,
+      "roc_auc": 0.8962029604533613,
+      "base_rate": 0.10018518518518518,
+      "capacity": [
+        {
+          "capacity": 0.05,
+          "reviewed": 540,
+          "caught": 387,
+          "recall": 0.3576709796672828,
+          "precision": 0.7166666666666667,
+          "lift": 7.153419593345657
+        },
+        {
+          "capacity": 0.1,
+          "reviewed": 1080,
+          "caught": 590,
+          "recall": 0.5452865064695009,
+          "precision": 0.5462962962962963,
+          "lift": 5.452865064695009
+        },
+        {
+          "capacity": 0.2,
+          "reviewed": 2160,
+          "caught": 801,
+          "recall": 0.7402957486136784,
+          "precision": 0.37083333333333335,
+          "lift": 3.701478743068392
+        }
+      ]
+    },
+    "LightGBM (class-weighted)": {
+      "pr_auc": 0.5454123087599507,
+      "roc_auc": 0.889197932529114,
+      "base_rate": 0.10018518518518518,
+      "capacity": [
+        {
+          "capacity": 0.05,
+          "reviewed": 540,
+          "caught": 374,
+          "recall": 0.3456561922365989,
+          "precision": 0.6925925925925925,
+          "lift": 6.913123844731977
+        },
+        {
+          "capacity": 0.1,
+          "reviewed": 1080,
+          "caught": 594,
+          "recall": 0.5489833641404805,
+          "precision": 0.55,
+          "lift": 5.489833641404807
+        },
+        {
+          "capacity": 0.2,
+          "reviewed": 2160,
+          "caught": 801,
+          "recall": 0.7402957486136784,
+          "precision": 0.37083333333333335,
+          "lift": 3.701478743068392
+        }
+      ]
+    }
+  },
+  "threshold": {
+    "probability": 0.8028007209041854,
+    "test": {
+      "pr_auc": 0.9585458899876204,
+      "roc_auc": 0.9720439390141471,
+      "base_rate": 0.31046296296296294,
+      "threshold": 0.8028007209041854,
+      "flag_rate": 0.2111111111111111,
+      "precision": 0.9973684210526316,
+      "recall": 0.6781986280942439
+    }
+  },
+  "calibration": {
+    "inner_claims": 8640,
+    "inner_base_rate": 0.2091435185185185,
+    "inner_brier_raw": null,
+    "inner_brier_calibrated": 0.05786009407319727,
+    "test_brier_raw": null,
+    "test_brier_calibrated": 0.0556921509884871,
+    "test_mean_probability": 0.31353899130263224,
+    "reliability_test": [
+      {
+        "bin": 1,
+        "claims": 1080,
+        "mean_probability": 7.012700055040834e-05,
+        "observed_rate": 0.0
+      },
+      {
+        "bin": 2,
+        "claims": 1080,
+        "mean_probability": 0.0003359196849437336,
+        "observed_rate": 0.003703703703703704
+      },
+      {
+        "bin": 3,
+        "claims": 1080,
+        "mean_probability": 0.0012991932226343456,
+        "observed_rate": 0.011111111111111112
+      },
+      {
+        "bin": 4,
+        "claims": 1080,
+        "mean_probability": 0.0065062125476295215,
+        "observed_rate": 0.020370370370370372
+      },
+      {
+        "bin": 5,
+        "claims": 1080,
+        "mean_probability": 0.046585099125733144,
+        "observed_rate": 0.07592592592592592
+      },
+      {
+        "bin": 6,
+        "claims": 1080,
+        "mean_probability": 0.16899776308750827,
+        "observed_rate": 0.08425925925925926
+      },
+      {
+        "bin": 7,
+        "claims": 1080,
+        "mean_probability": 0.35414478859387183,
+        "observed_rate": 0.18611111111111112
+      },
+      {
+        "bin": 8,
+        "claims": 1080,
+        "mean_probability": 0.6933402347224282,
+        "observed_rate": 0.7240740740740741
+      },
+      {
+        "bin": 9,
+        "claims": 1080,
+        "mean_probability": 0.8867367053429556,
+        "observed_rate": 0.9990740740740741
+      },
+      {
+        "bin": 10,
+        "claims": 1080,
+        "mean_probability": 0.9773738696980674,
+        "observed_rate": 1.0
+      }
+    ]
+  }
+}

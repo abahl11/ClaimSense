@@ -31,3 +31,6 @@ convention = "google"
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
+filterwarnings = [
+    "ignore::PendingDeprecationWarning:shap.*", # third-party deprecation notices inside shap
+]

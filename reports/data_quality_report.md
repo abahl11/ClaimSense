@@ -142,13 +142,13 @@ Up to 5 rows per rule, shown as they were before the rule ran. *Row* is the 0-ba
 
 **MaritalStatus missing or not one of M, S, U**
 
-|   Row |   MaritalStatus |
-|------:|----------------:|
-|  1042 |             nan |
-|  7587 |             nan |
-|  7592 |             nan |
-| 10482 |             nan |
-| 10555 |             nan |
+|   Row | MaritalStatus   |
+|------:|:----------------|
+|  1042 | nan             |
+|  7587 | nan             |
+|  7592 | nan             |
+| 10482 | nan             |
+| 10555 | nan             |
 
 **Claim description has encoding errors, extra whitespace or lower case**
 

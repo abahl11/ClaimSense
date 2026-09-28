@@ -1,0 +1,1709 @@
+{
+  "selection_metric": "rmsle",
+  "candidates": [
+    {
+      "name": "Baseline A: training median",
+      "group": "baseline",
+      "family": "median",
+      "target": "raw",
+      "approach": "raw cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('median', 'raw', (), (), None)",
+      "cv": {
+        "rmsle": 1.482305212751267,
+        "rmsle_std": 0.16141659730566396,
+        "r2_log": -0.033667741600466705,
+        "mean_log_error": -0.10566108666241747
+      },
+      "cv_folds": [
+        {
+          "rmsle": 1.2842601617203242,
+          "r2_log": -4.678114966516489e-07,
+          "mean_log_error": 0.0008783919649508169
+        },
+        {
+          "rmsle": 1.3402926728693414,
+          "r2_log": -0.014108482056651939,
+          "mean_log_error": -0.1580875179485955
+        },
+        {
+          "rmsle": 1.4889682835129168,
+          "r2_log": -0.032186880672459006,
+          "mean_log_error": 0.26293338014085627
+        },
+        {
+          "rmsle": 1.5616330383496955,
+          "r2_log": -0.0017366443594057923,
+          "mean_log_error": -0.06502160014898438
+        },
+        {
+          "rmsle": 1.736371907304057,
+          "r2_log": -0.12030623310232014,
+          "mean_log_error": -0.5690080873203146
+        }
+      ],
+      "test": {
+        "rmsle": 1.7927984867429736,
+        "r2_log": -0.3284415947647561,
+        "mean_log_error": -0.8914342586138783,
+        "mae": 19656.67561582072,
+        "mae_typical": 19656.67561582072,
+        "rmse": 59836.449039836996,
+        "bias_ratio": 0.13118855432073642,
+        "gamma_deviance": 11.462455128828687,
+        "smearing": 1.0
+      }
+    },
+    {
+      "name": "Baseline B: adjuster's initial estimate",
+      "group": "baseline",
+      "family": "initial",
+      "target": "raw",
+      "approach": "raw cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('initial', 'raw', (), (), None)",
+      "cv": {
+        "rmsle": 0.8122273393370808,
+        "rmsle_std": 0.05869700775577165,
+        "r2_log": 0.6712368400946609,
+        "mean_log_error": -0.19713881946138226
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.9135745695902209,
+          "r2_log": 0.4939631011425153,
+          "mean_log_error": -0.4331189466828812
+        },
+        {
+          "rmsle": 0.8422572207340265,
+          "r2_log": 0.599525733852486,
+          "mean_log_error": -0.2812448388148106
+        },
+        {
+          "rmsle": 0.7648035647199676,
+          "r2_log": 0.727675165801255,
+          "mean_log_error": -0.10750822266490495
+        },
+        {
+          "rmsle": 0.782094296580623,
+          "r2_log": 0.7487455157274883,
+          "mean_log_error": -0.04689787862259578
+        },
+        {
+          "rmsle": 0.7584070450605656,
+          "r2_log": 0.7862746839495598,
+          "mean_log_error": -0.11692421052171874
+        }
+      ],
+      "test": {
+        "rmsle": 0.8881967240452162,
+        "r2_log": 0.673939758815805,
+        "mean_log_error": -0.24567454987243814,
+        "mae": 11641.238218490666,
+        "mae_typical": 11641.238218490666,
+        "rmse": 56208.17505827804,
+        "bias_ratio": 0.732066261291977,
+        "gamma_deviance": 27.984101916884235,
+        "smearing": 1.0
+      }
+    },
+    {
+      "name": "Ridge (log target)",
+      "group": "family",
+      "family": "ridge",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('ridge', 'log', (), (), None)",
+      "cv": {
+        "rmsle": 0.6210403127726071,
+        "rmsle_std": 0.0151238803710195,
+        "r2_log": 0.8132879322460843,
+        "mean_log_error": -0.03172361517010545
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6197574781864148,
+          "r2_log": 0.7671170288564555,
+          "mean_log_error": -0.02889851264798543
+        },
+        {
+          "rmsle": 0.635269513600912,
+          "r2_log": 0.7721751165592687,
+          "mean_log_error": 0.05204457605849809
+        },
+        {
+          "rmsle": 0.6022393340426679,
+          "r2_log": 0.8311404314733122,
+          "mean_log_error": 0.052087619994999376
+        },
+        {
+          "rmsle": 0.6071015595819362,
+          "r2_log": 0.8486026473784524,
+          "mean_log_error": -0.053261531498656874
+        },
+        {
+          "rmsle": 0.6408336784511045,
+          "r2_log": 0.8474044369629331,
+          "mean_log_error": -0.1805902277573824
+        }
+      ],
+      "test": {
+        "rmsle": 0.6207063618863149,
+        "r2_log": 0.8407600968515686,
+        "mean_log_error": -0.12431570167914192,
+        "mae": 13333.91620693548,
+        "mae_typical": 10954.644582501252,
+        "rmse": 52242.00555885167,
+        "bias_ratio": 0.9966862532043714,
+        "gamma_deviance": 0.659535298061162,
+        "smearing": 1.4880275970601966
+      }
+    },
+    {
+      "name": "Random forest (log target)",
+      "group": "family",
+      "family": "random_forest",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('random_forest', 'log', (), (), None)",
+      "cv": {
+        "rmsle": 0.5943239355069697,
+        "rmsle_std": 0.02092575450667611,
+        "r2_log": 0.8274629953480902,
+        "mean_log_error": -0.015339238076130694
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6215700793721589,
+          "r2_log": 0.7657528138004835,
+          "mean_log_error": 0.0014707554881892898
+        },
+        {
+          "rmsle": 0.6070202981722655,
+          "r2_log": 0.791986483525736,
+          "mean_log_error": 0.009667146286030855
+        },
+        {
+          "rmsle": 0.5780552695026251,
+          "r2_log": 0.8444298860029729,
+          "mean_log_error": 0.10269733290144807
+        },
+        {
+          "rmsle": 0.5632387533518793,
+          "r2_log": 0.8696891309569057,
+          "mean_log_error": -0.038385993870850746
+        },
+        {
+          "rmsle": 0.6017352771359196,
+          "r2_log": 0.865456662454353,
+          "mean_log_error": -0.15214543118547094
+        }
+      ],
+      "test": {
+        "rmsle": 0.5807700763221625,
+        "r2_log": 0.8605919107751459,
+        "mean_log_error": -0.12059862937105895,
+        "mae": 12299.619234074606,
+        "mae_typical": 10342.908006161299,
+        "rmse": 50731.19193562713,
+        "bias_ratio": 0.92964707147923,
+        "gamma_deviance": 0.6115873450973386,
+        "smearing": 1.4539575326871346
+      }
+    },
+    {
+      "name": "LightGBM (log target)",
+      "group": "family",
+      "family": "lightgbm",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('lightgbm', 'log', (), (), None)",
+      "cv": {
+        "rmsle": 0.5760455877557057,
+        "rmsle_std": 0.025187385127368185,
+        "r2_log": 0.8369971067078896,
+        "mean_log_error": -0.010724494416960268
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6154532279971113,
+          "r2_log": 0.770340566425626,
+          "mean_log_error": -0.015743799035320215
+        },
+        {
+          "rmsle": 0.5928386589222825,
+          "r2_log": 0.8015924653376454,
+          "mean_log_error": 0.020499402030481177
+        },
+        {
+          "rmsle": 0.5542388798782429,
+          "r2_log": 0.8569850569623338,
+          "mean_log_error": 0.06550068387207034
+        },
+        {
+          "rmsle": 0.5472286408251626,
+          "r2_log": 0.876992038115735,
+          "mean_log_error": -0.042177659773490625
+        },
+        {
+          "rmsle": 0.5704685311557289,
+          "r2_log": 0.8790754066981081,
+          "mean_log_error": -0.08170109917854201
+        }
+      ],
+      "test": {
+        "rmsle": 0.5498257594837412,
+        "r2_log": 0.875051894099272,
+        "mean_log_error": -0.0345641171244536,
+        "mae": 13530.943596036068,
+        "mae_typical": 10459.36831608303,
+        "rmse": 51013.74233351724,
+        "bias_ratio": 1.056717563633645,
+        "gamma_deviance": 0.5896084625217597,
+        "smearing": 1.4335696466869503
+      }
+    },
+    {
+      "name": "LightGBM Tweedie, power 1.5 (raw cost)",
+      "group": "loss",
+      "family": "tweedie",
+      "target": "raw",
+      "approach": "raw cost",
+      "params": {
+        "tweedie_variance_power": 1.5
+      },
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('tweedie', 'raw', (('tweedie_variance_power', 1.5),), (), None)",
+      "cv": {
+        "rmsle": 0.630066191581838,
+        "rmsle_std": 0.021356377696480945,
+        "r2_log": 0.8055934418011612,
+        "mean_log_error": 0.11103229246084309
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.650744111801452,
+          "r2_log": 0.7432475030367598,
+          "mean_log_error": 0.05282756574186278
+        },
+        {
+          "rmsle": 0.6508603547905767,
+          "r2_log": 0.7608552970984471,
+          "mean_log_error": 0.12012361894437731
+        },
+        {
+          "rmsle": 0.6392372462732719,
+          "r2_log": 0.8097557300991857,
+          "mean_log_error": 0.23308312335633238
+        },
+        {
+          "rmsle": 0.599547086088682,
+          "r2_log": 0.8523470334015371,
+          "mean_log_error": 0.10568874447812672
+        },
+        {
+          "rmsle": 0.6099421589552071,
+          "r2_log": 0.8617616453698759,
+          "mean_log_error": 0.04343840978351627
+        }
+      ],
+      "test": {
+        "rmsle": 0.608673178490016,
+        "r2_log": 0.8468743867811176,
+        "mean_log_error": 0.14632524668386257,
+        "mae": 11919.162746030117,
+        "mae_typical": 11919.162746030117,
+        "rmse": 51320.0201826578,
+        "bias_ratio": 0.8666561304909858,
+        "gamma_deviance": 0.6632110030656372,
+        "smearing": 1.0
+      }
+    },
+    {
+      "name": "LightGBM Tweedie, power 1.7 (raw cost)",
+      "group": "loss",
+      "family": "tweedie",
+      "target": "raw",
+      "approach": "raw cost",
+      "params": {
+        "tweedie_variance_power": 1.7
+      },
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('tweedie', 'raw', (('tweedie_variance_power', 1.7),), (), None)",
+      "cv": {
+        "rmsle": 0.6219440734922032,
+        "rmsle_std": 0.021980358805751683,
+        "r2_log": 0.8103589610281225,
+        "mean_log_error": 0.09794204475531784
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6467960961964734,
+          "r2_log": 0.746353448793635,
+          "mean_log_error": 0.036695145470391696
+        },
+        {
+          "rmsle": 0.6447095070372272,
+          "r2_log": 0.7653539340120887,
+          "mean_log_error": 0.11119570660084027
+        },
+        {
+          "rmsle": 0.6234899508398241,
+          "r2_log": 0.8190134268508414,
+          "mean_log_error": 0.21203352172580203
+        },
+        {
+          "rmsle": 0.5914935717494494,
+          "r2_log": 0.8562871366933731,
+          "mean_log_error": 0.09434216988210019
+        },
+        {
+          "rmsle": 0.6032312416380416,
+          "r2_log": 0.8647868587906744,
+          "mean_log_error": 0.035443680097455015
+        }
+      ],
+      "test": {
+        "rmsle": 0.5957888485379008,
+        "r2_log": 0.8532884681051913,
+        "mean_log_error": 0.1278007283562198,
+        "mae": 11668.063714650792,
+        "mae_typical": 11668.063714650792,
+        "rmse": 51203.94267287326,
+        "bias_ratio": 0.8513834659871526,
+        "gamma_deviance": 0.6631295856839381,
+        "smearing": 1.0
+      }
+    },
+    {
+      "name": "LightGBM Tweedie, power 1.9 (raw cost)",
+      "group": "loss",
+      "family": "tweedie",
+      "target": "raw",
+      "approach": "raw cost",
+      "params": {
+        "tweedie_variance_power": 1.9
+      },
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('tweedie', 'raw', (('tweedie_variance_power', 1.9),), (), None)",
+      "cv": {
+        "rmsle": 0.6122977907435969,
+        "rmsle_std": 0.02109602862924239,
+        "r2_log": 0.8162995516708941,
+        "mean_log_error": 0.08163953384923865
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6389742617611488,
+          "r2_log": 0.7524511509872587,
+          "mean_log_error": 0.026086613841588897
+        },
+        {
+          "rmsle": 0.6333561511402455,
+          "r2_log": 0.7735454172307314,
+          "mean_log_error": 0.10048703786916345
+        },
+        {
+          "rmsle": 0.6067110862502575,
+          "r2_log": 0.8286234868440765,
+          "mean_log_error": 0.1795332831698047
+        },
+        {
+          "rmsle": 0.582543868340786,
+          "r2_log": 0.8606031837784299,
+          "mean_log_error": 0.07588687106797054
+        },
+        {
+          "rmsle": 0.5999035862255466,
+          "r2_log": 0.8662745195139735,
+          "mean_log_error": 0.02620386329766567
+        }
+      ],
+      "test": {
+        "rmsle": 0.5907316300181772,
+        "r2_log": 0.8557685525550949,
+        "mean_log_error": 0.12616799628037637,
+        "mae": 11570.451999442166,
+        "mae_typical": 11570.451999442166,
+        "rmse": 51084.75379160237,
+        "bias_ratio": 0.848261162661924,
+        "gamma_deviance": 0.6544634782718323,
+        "smearing": 1.0
+      }
+    },
+    {
+      "name": "LightGBM Gamma (raw cost)",
+      "group": "loss",
+      "family": "gamma",
+      "target": "raw",
+      "approach": "raw cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('gamma', 'raw', (), (), None)",
+      "cv": {
+        "rmsle": 0.6136648622735146,
+        "rmsle_std": 0.01867010547987593,
+        "r2_log": 0.8158042419879546,
+        "mean_log_error": 0.0772073755206229
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6367348446543751,
+          "r2_log": 0.7541832823637091,
+          "mean_log_error": 0.026616254578436336
+        },
+        {
+          "rmsle": 0.6315152809632292,
+          "r2_log": 0.774859899324159,
+          "mean_log_error": 0.0864470634842354
+        },
+        {
+          "rmsle": 0.6111656822647545,
+          "r2_log": 0.826097685958024,
+          "mean_log_error": 0.17056893225863168
+        },
+        {
+          "rmsle": 0.5858617653725127,
+          "r2_log": 0.859010783920263,
+          "mean_log_error": 0.07556273608779497
+        },
+        {
+          "rmsle": 0.6030467381127012,
+          "r2_log": 0.8648695583736177,
+          "mean_log_error": 0.026841891194016136
+        }
+      ],
+      "test": {
+        "rmsle": 0.5910258071730188,
+        "r2_log": 0.8556248657795691,
+        "mean_log_error": 0.11248552177500663,
+        "mae": 11469.200429749912,
+        "mae_typical": 11469.200429749912,
+        "rmse": 51040.76675869259,
+        "bias_ratio": 0.8393662199016557,
+        "gamma_deviance": 0.6659979848081166,
+        "smearing": 1.0
+      }
+    },
+    {
+      "name": "LightGBM, A: log cost",
+      "group": "drift",
+      "family": "lightgbm",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('lightgbm', 'log', (), (), None)",
+      "cv": {
+        "rmsle": 0.5760455877557057,
+        "rmsle_std": 0.025187385127368185,
+        "r2_log": 0.8369971067078896,
+        "mean_log_error": -0.010724494416960268
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6154532279971113,
+          "r2_log": 0.770340566425626,
+          "mean_log_error": -0.015743799035320215
+        },
+        {
+          "rmsle": 0.5928386589222825,
+          "r2_log": 0.8015924653376454,
+          "mean_log_error": 0.020499402030481177
+        },
+        {
+          "rmsle": 0.5542388798782429,
+          "r2_log": 0.8569850569623338,
+          "mean_log_error": 0.06550068387207034
+        },
+        {
+          "rmsle": 0.5472286408251626,
+          "r2_log": 0.876992038115735,
+          "mean_log_error": -0.042177659773490625
+        },
+        {
+          "rmsle": 0.5704685311557289,
+          "r2_log": 0.8790754066981081,
+          "mean_log_error": -0.08170109917854201
+        }
+      ],
+      "test": {
+        "rmsle": 0.5498257594837412,
+        "r2_log": 0.875051894099272,
+        "mean_log_error": -0.0345641171244536,
+        "mae": 13530.943596036068,
+        "mae_typical": 10459.36831608303,
+        "rmse": 51013.74233351724,
+        "bias_ratio": 1.056717563633645,
+        "gamma_deviance": 0.5896084625217597,
+        "smearing": 1.4335696466869503
+      }
+    },
+    {
+      "name": "LightGBM, B: log ratio to initial estimate",
+      "group": "drift",
+      "family": "lightgbm",
+      "target": "log_ratio",
+      "approach": "B: log ratio to initial estimate",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('lightgbm', 'log_ratio', (), (), None)",
+      "cv": {
+        "rmsle": 0.5800341312254529,
+        "rmsle_std": 0.025286866231458906,
+        "r2_log": 0.8347221336129241,
+        "mean_log_error": -0.00979081333446324
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6159106009197056,
+          "r2_log": 0.769999097629305,
+          "mean_log_error": -0.012594196792922915
+        },
+        {
+          "rmsle": 0.6015042664898922,
+          "r2_log": 0.7957497707208367,
+          "mean_log_error": 0.019578314313570825
+        },
+        {
+          "rmsle": 0.560339839019781,
+          "r2_log": 0.8538191634416568,
+          "mean_log_error": 0.055308579494570916
+        },
+        {
+          "rmsle": 0.5479353195054458,
+          "r2_log": 0.8766741335854279,
+          "mean_log_error": -0.02978778443685088
+        },
+        {
+          "rmsle": 0.5744806301924398,
+          "r2_log": 0.8773685026873943,
+          "mean_log_error": -0.08145897925068415
+        }
+      ],
+      "test": {
+        "rmsle": 0.6243561664985106,
+        "r2_log": 0.8388819035394053,
+        "mean_log_error": -0.060999592663879096,
+        "mae": 13939.08094185779,
+        "mae_typical": 10668.35107332026,
+        "rmse": 54442.04083644983,
+        "bias_ratio": 1.0785860242043421,
+        "gamma_deviance": 1.2753043228842726,
+        "smearing": 1.4447150932287227
+      }
+    },
+    {
+      "name": "LightGBM, C: log cost, trend-adjusted",
+      "group": "drift",
+      "family": "lightgbm",
+      "target": "log_trend",
+      "approach": "C: log cost, trend-adjusted",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('lightgbm', 'log_trend', (), (), None)",
+      "cv": {
+        "rmsle": 0.5983091331092145,
+        "rmsle_std": 0.023603771129841272,
+        "r2_log": 0.8248543189774837,
+        "mean_log_error": -0.012818987025323336
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6424213305555488,
+          "r2_log": 0.7497730474797459,
+          "mean_log_error": -0.171584477823487
+        },
+        {
+          "rmsle": 0.5939445125271913,
+          "r2_log": 0.8008515746334214,
+          "mean_log_error": 0.032473171249727116
+        },
+        {
+          "rmsle": 0.5720151335539054,
+          "r2_log": 0.8476640242589446,
+          "mean_log_error": 0.1463205537253395
+        },
+        {
+          "rmsle": 0.5959914485338312,
+          "r2_log": 0.8540931636969489,
+          "mean_log_error": -0.2069519584902344
+        },
+        {
+          "rmsle": 0.5871732403755954,
+          "r2_log": 0.871889784818358,
+          "mean_log_error": 0.1356477762120381
+        }
+      ],
+      "test": {
+        "rmsle": 0.663339422243683,
+        "r2_log": 0.8181341621349861,
+        "mean_log_error": 0.3438572643534423,
+        "mae": 24127.160718296363,
+        "mae_typical": 15635.335797055872,
+        "rmse": 61031.71117854071,
+        "bias_ratio": 1.7287878185108065,
+        "gamma_deviance": 0.7565038191671767,
+        "smearing": 1.4367878489882029
+      }
+    },
+    {
+      "name": "LightGBM, D: log ratio, trend-adjusted",
+      "group": "drift",
+      "family": "lightgbm",
+      "target": "log_ratio_trend",
+      "approach": "D: log ratio, trend-adjusted",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('lightgbm', 'log_ratio_trend', (), (), None)",
+      "cv": {
+        "rmsle": 0.5876822532483861,
+        "rmsle_std": 0.01906962719981433,
+        "r2_log": 0.8313416178707576,
+        "mean_log_error": -0.057023903508856055
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.615718170203732,
+          "r2_log": 0.77014279486144,
+          "mean_log_error": 0.011140147315520557
+        },
+        {
+          "rmsle": 0.5999254293187282,
+          "r2_log": 0.7968206014692092,
+          "mean_log_error": 0.02010088579223082
+        },
+        {
+          "rmsle": 0.5602866917815509,
+          "r2_log": 0.8538468921118716,
+          "mean_log_error": -0.02940077448613593
+        },
+        {
+          "rmsle": 0.5762990338829225,
+          "r2_log": 0.8635758153045615,
+          "mean_log_error": -0.15187399713106398
+        },
+        {
+          "rmsle": 0.586181941054997,
+          "r2_log": 0.8723219856067049,
+          "mean_log_error": -0.13508577903483174
+        }
+      ],
+      "test": {
+        "rmsle": 0.6166076364616745,
+        "r2_log": 0.8428561788272688,
+        "mean_log_error": 0.008642472998132313,
+        "mae": 15083.450970990278,
+        "mae_typical": 10996.697351186347,
+        "rmse": 55664.44573544459,
+        "bias_ratio": 1.1646115459697535,
+        "gamma_deviance": 1.2469195011745748,
+        "smearing": 1.446856104176837
+      }
+    },
+    {
+      "name": "No text features",
+      "group": "ablation",
+      "family": "lightgbm",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {},
+      "layers": {
+        "rules": false,
+        "tfidf_svd": false,
+        "embedding_clusters": false
+      },
+      "model_key": "('lightgbm', 'log', (), ('embedding_clusters', 'rules', 'tfidf_svd'), None)",
+      "cv": {
+        "rmsle": 0.7268440800738417,
+        "rmsle_std": 0.03741775076647817,
+        "r2_log": 0.7393869557445362,
+        "mean_log_error": -0.007228002953135528
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.7943777389879644,
+          "r2_log": 0.6173970517326117,
+          "mean_log_error": 0.013093104150797666
+        },
+        {
+          "rmsle": 0.7410167387452253,
+          "r2_log": 0.6900146531252644,
+          "mean_log_error": 0.049350059882423254
+        },
+        {
+          "rmsle": 0.6966293040162671,
+          "r2_log": 0.7740611471120229,
+          "mean_log_error": 0.023727404150177635
+        },
+        {
+          "rmsle": 0.700816435848856,
+          "r2_log": 0.7982543677809603,
+          "mean_log_error": -0.0624725052611617
+        },
+        {
+          "rmsle": 0.701380182770896,
+          "r2_log": 0.8172075589718216,
+          "mean_log_error": -0.059838077687914486
+        }
+      ],
+      "test": {
+        "rmsle": 0.6925131672639664,
+        "r2_log": 0.8017854265750883,
+        "mean_log_error": -0.03352824224762936,
+        "mae": 15881.587936067644,
+        "mae_typical": 10933.984462503671,
+        "rmse": 52145.92155318158,
+        "bias_ratio": 1.195740299267856,
+        "gamma_deviance": 0.8373035672738708,
+        "smearing": 1.662870587323264
+      }
+    },
+    {
+      "name": "Layer 1: keyword rules",
+      "group": "ablation",
+      "family": "lightgbm",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": false,
+        "embedding_clusters": false
+      },
+      "model_key": "('lightgbm', 'log', (), ('embedding_clusters', 'tfidf_svd'), None)",
+      "cv": {
+        "rmsle": 0.5915859765821564,
+        "rmsle_std": 0.02811052542475355,
+        "r2_log": 0.8277955915387872,
+        "mean_log_error": -0.015612023561178185
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6340567472972745,
+          "r2_log": 0.7562467367605591,
+          "mean_log_error": -0.01712230348219254
+        },
+        {
+          "rmsle": 0.6131228676911662,
+          "r2_log": 0.7877830067174553,
+          "mean_log_error": 0.027639402549274897
+        },
+        {
+          "rmsle": 0.566312485491099,
+          "r2_log": 0.8506862805072933,
+          "mean_log_error": 0.038904395744537204
+        },
+        {
+          "rmsle": 0.56008450183292,
+          "r2_log": 0.8711445788261408,
+          "mean_log_error": -0.05017881237952088
+        },
+        {
+          "rmsle": 0.5843532805983223,
+          "r2_log": 0.8731173548824875,
+          "mean_log_error": -0.07730280023798959
+        }
+      ],
+      "test": {
+        "rmsle": 0.5595611254793101,
+        "r2_log": 0.8705879903473666,
+        "mean_log_error": -0.04965974606141307,
+        "mae": 13639.67578968425,
+        "mae_typical": 10466.929624199487,
+        "rmse": 51111.62183212476,
+        "bias_ratio": 1.0649955682794943,
+        "gamma_deviance": 0.5992179328389134,
+        "smearing": 1.4511668055131524
+      }
+    },
+    {
+      "name": "Layers 1-2: + TF-IDF/SVD",
+      "group": "ablation",
+      "family": "lightgbm",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": false
+      },
+      "model_key": "('lightgbm', 'log', (), ('embedding_clusters',), None)",
+      "cv": {
+        "rmsle": 0.5768366974568917,
+        "rmsle_std": 0.024972743216648146,
+        "r2_log": 0.8365646400855908,
+        "mean_log_error": -0.010489024918854766
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6160625918485537,
+          "r2_log": 0.7698855669834292,
+          "mean_log_error": -0.009292350580732536
+        },
+        {
+          "rmsle": 0.59345973136019,
+          "r2_log": 0.8011765343034213,
+          "mean_log_error": 0.015652807208275738
+        },
+        {
+          "rmsle": 0.555366039589296,
+          "r2_log": 0.8564027643616566,
+          "mean_log_error": 0.06673978373344422
+        },
+        {
+          "rmsle": 0.5484388249416364,
+          "r2_log": 0.8764473777182816,
+          "mean_log_error": -0.042511861491495676
+        },
+        {
+          "rmsle": 0.5708562995447823,
+          "r2_log": 0.8789109570611653,
+          "mean_log_error": -0.08303350346376558
+        }
+      ],
+      "test": {
+        "rmsle": 0.5507122953114308,
+        "r2_log": 0.8746486380720534,
+        "mean_log_error": -0.03584024930378955,
+        "mae": 13537.898672464573,
+        "mae_typical": 10472.327611519162,
+        "rmse": 51050.42286684925,
+        "bias_ratio": 1.0566933148628952,
+        "gamma_deviance": 0.5940767013419906,
+        "smearing": 1.4335087534783346
+      }
+    },
+    {
+      "name": "Layers 1-3: + embedding clusters",
+      "group": "ablation",
+      "family": "lightgbm",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {},
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": true
+      },
+      "model_key": "('lightgbm', 'log', (), (), None)",
+      "cv": {
+        "rmsle": 0.5760455877557057,
+        "rmsle_std": 0.025187385127368185,
+        "r2_log": 0.8369971067078896,
+        "mean_log_error": -0.010724494416960268
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6154532279971113,
+          "r2_log": 0.770340566425626,
+          "mean_log_error": -0.015743799035320215
+        },
+        {
+          "rmsle": 0.5928386589222825,
+          "r2_log": 0.8015924653376454,
+          "mean_log_error": 0.020499402030481177
+        },
+        {
+          "rmsle": 0.5542388798782429,
+          "r2_log": 0.8569850569623338,
+          "mean_log_error": 0.06550068387207034
+        },
+        {
+          "rmsle": 0.5472286408251626,
+          "r2_log": 0.876992038115735,
+          "mean_log_error": -0.042177659773490625
+        },
+        {
+          "rmsle": 0.5704685311557289,
+          "r2_log": 0.8790754066981081,
+          "mean_log_error": -0.08170109917854201
+        }
+      ],
+      "test": {
+        "rmsle": 0.5498257594837412,
+        "r2_log": 0.875051894099272,
+        "mean_log_error": -0.0345641171244536,
+        "mae": 13530.943596036068,
+        "mae_typical": 10459.36831608303,
+        "rmse": 51013.74233351724,
+        "bias_ratio": 1.056717563633645,
+        "gamma_deviance": 0.5896084625217597,
+        "smearing": 1.4335696466869503
+      }
+    },
+    {
+      "name": "LightGBM, tuned (A, Layers 1-2: + TF-IDF/SVD)",
+      "group": "tuned",
+      "family": "lightgbm",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {
+        "colsample_bytree": 0.539592661409865,
+        "learning_rate": 0.02114586454722342,
+        "min_child_samples": 89,
+        "n_estimators": 619,
+        "num_leaves": 24,
+        "reg_lambda": 0.1271222921375782,
+        "subsample": 0.8565563980838957
+      },
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": false
+      },
+      "model_key": "('lightgbm', 'log', (('colsample_bytree', 0.539592661409865), ('learning_rate', 0.02114586454722342), ('min_child_samples', 89), ('n_estimators', 619), ('num_leaves', 24), ('reg_lambda', 0.1271222921375782), ('subsample', 0.8565563980838957)), ('embedding_clusters',), None)",
+      "cv": {
+        "rmsle": 0.5701964214497347,
+        "rmsle_std": 0.020932660886987156,
+        "r2_log": 0.8407858333619707,
+        "mean_log_error": -0.00965932504700689
+      },
+      "cv_folds": [
+        {
+          "rmsle": 0.6003634067512088,
+          "r2_log": 0.7814641918963522,
+          "mean_log_error": -0.008384486052805755
+        },
+        {
+          "rmsle": 0.5865733071517,
+          "r2_log": 0.805764002508786,
+          "mean_log_error": 0.01855790667234797
+        },
+        {
+          "rmsle": 0.5516254664967486,
+          "r2_log": 0.8583305994249971,
+          "mean_log_error": 0.07078678915908757
+        },
+        {
+          "rmsle": 0.5444517814322797,
+          "r2_log": 0.8782372549850336,
+          "mean_log_error": -0.03998468163668874
+        },
+        {
+          "rmsle": 0.5679681454167365,
+          "r2_log": 0.8801331179946843,
+          "mean_log_error": -0.08927215337697549
+        }
+      ],
+      "test": {
+        "rmsle": 0.5485221180825054,
+        "r2_log": 0.8756436976560245,
+        "mean_log_error": -0.04069865388695163,
+        "mae": 13301.269356587309,
+        "mae_typical": 10352.97280563682,
+        "rmse": 50870.9113047605,
+        "bias_ratio": 1.0416136593240697,
+        "gamma_deviance": 0.5839041452660656,
+        "smearing": 1.4342571190464197
+      }
+    }
+  ],
+  "groups": {
+    "stage_one": [
+      "Baseline A: training median",
+      "Baseline B: adjuster's initial estimate",
+      "Ridge (log target)",
+      "Random forest (log target)",
+      "LightGBM (log target)",
+      "LightGBM Tweedie, power 1.5 (raw cost)",
+      "LightGBM Tweedie, power 1.7 (raw cost)",
+      "LightGBM Tweedie, power 1.9 (raw cost)",
+      "LightGBM Gamma (raw cost)"
+    ],
+    "drift": [
+      "LightGBM, A: log cost",
+      "LightGBM, B: log ratio to initial estimate",
+      "LightGBM, C: log cost, trend-adjusted",
+      "LightGBM, D: log ratio, trend-adjusted"
+    ],
+    "ablation": [
+      "No text features",
+      "Layer 1: keyword rules",
+      "Layers 1-2: + TF-IDF/SVD",
+      "Layers 1-3: + embedding clusters"
+    ],
+    "tuned": [
+      "LightGBM, tuned (A, Layers 1-2: + TF-IDF/SVD)"
+    ]
+  },
+  "choices": {
+    "best_family": "LightGBM (log target)",
+    "best_drift": "LightGBM, A: log cost",
+    "best_layers": "Layers 1-2: + TF-IDF/SVD",
+    "final": "LightGBM, tuned (A, Layers 1-2: + TF-IDF/SVD)"
+  },
+  "drift_bias_by_year": {
+    "LightGBM, A: log cost": {
+      "2002": 1.1046976021725972,
+      "2003": 1.1202329730926548,
+      "2004": 1.0943054809723443,
+      "2005": 0.9674301663553959
+    },
+    "LightGBM, B: log ratio to initial estimate": {
+      "2002": 1.1261901273540316,
+      "2003": 1.128718566137648,
+      "2004": 1.1384488488293198,
+      "2005": 0.9796658260296767
+    },
+    "LightGBM, C: log cost, trend-adjusted": {
+      "2002": 1.21741919258159,
+      "2003": 1.4988072794163922,
+      "2004": 1.8150492392270379,
+      "2005": 1.9897253881549186
+    },
+    "LightGBM, D: log ratio, trend-adjusted": {
+      "2002": 1.1535839096674578,
+      "2003": 1.19334113325666,
+      "2004": 1.2288617939022255,
+      "2005": 1.0969517843425651
+    }
+  },
+  "final": {
+    "name": "LightGBM, tuned (A, Layers 1-2: + TF-IDF/SVD)",
+    "description": {
+      "name": "LightGBM, tuned (A, Layers 1-2: + TF-IDF/SVD)",
+      "group": "tuned",
+      "family": "lightgbm",
+      "target": "log",
+      "approach": "A: log cost",
+      "params": {
+        "colsample_bytree": 0.539592661409865,
+        "learning_rate": 0.02114586454722342,
+        "min_child_samples": 89,
+        "n_estimators": 619,
+        "num_leaves": 24,
+        "reg_lambda": 0.1271222921375782,
+        "subsample": 0.8565563980838957
+      },
+      "layers": {
+        "rules": true,
+        "tfidf_svd": true,
+        "embedding_clusters": false
+      }
+    },
+    "test": {
+      "rmsle": 0.5485221180825054,
+      "r2_log": 0.8756436976560245,
+      "mean_log_error": -0.04069865388695163,
+      "mae": 13301.269356587309,
+      "mae_typical": 10352.97280563682,
+      "rmse": 50870.9113047605,
+      "bias_ratio": 1.0416136593240697,
+      "gamma_deviance": 0.5839041452660656,
+      "smearing": 1.4342571190464197
+    },
+    "smearing": 1.4342571190464197,
+    "trend_annual_growth": null,
+    "calibration_deciles": [
+      {
+        "decile": 1,
+        "claims": 1080,
+        "mean_predicted": 1021.540429412707,
+        "mean_actual": 682.6158360204629,
+        "ratio": 1.4965085418587976
+      },
+      {
+        "decile": 2,
+        "claims": 1080,
+        "mean_predicted": 1698.066303266992,
+        "mean_actual": 1542.6895307178704,
+        "ratio": 1.1007181091562985
+      },
+      {
+        "decile": 3,
+        "claims": 1080,
+        "mean_predicted": 2655.2451638465645,
+        "mean_actual": 2691.2594818005555,
+        "ratio": 0.9866180432628161
+      },
+      {
+        "decile": 4,
+        "claims": 1080,
+        "mean_predicted": 4452.826003481915,
+        "mean_actual": 4787.726274015926,
+        "ratio": 0.930050246950919
+      },
+      {
+        "decile": 5,
+        "claims": 1080,
+        "mean_predicted": 8542.874757784004,
+        "mean_actual": 10604.00159838611,
+        "ratio": 0.8056274490833911
+      },
+      {
+        "decile": 6,
+        "claims": 1080,
+        "mean_predicted": 13996.073939028398,
+        "mean_actual": 13468.23145088611,
+        "ratio": 1.0391916704184319
+      },
+      {
+        "decile": 7,
+        "claims": 1080,
+        "mean_predicted": 19459.829288880643,
+        "mean_actual": 19512.426088957407,
+        "ratio": 0.9973044459034989
+      },
+      {
+        "decile": 8,
+        "claims": 1080,
+        "mean_predicted": 31458.426359603644,
+        "mean_actual": 30988.470550712034,
+        "ratio": 1.0151655051230275
+      },
+      {
+        "decile": 9,
+        "claims": 1080,
+        "mean_predicted": 47473.318467595076,
+        "mean_actual": 50006.8080760463,
+        "ratio": 0.9493371061676543
+      },
+      {
+        "decile": 10,
+        "claims": 1080,
+        "mean_predicted": 93071.31891792547,
+        "mean_actual": 80603.04493725926,
+        "ratio": 1.154687381728214
+      }
+    ],
+    "interval": {
+      "nominal_coverage": 0.8,
+      "coverage": 0.8088888888888889,
+      "below_interval": 0.06759259259259259,
+      "above_interval": 0.12351851851851851,
+      "coverage_by_year": {
+        "2002": 0.781372002230898,
+        "2003": 0.7961719274680994,
+        "2004": 0.8245382585751979,
+        "2005": 0.8221554888221555
+      },
+      "median_width_ratio": 2.6605515673147417,
+      "median_model_rmsle": 0.5886585708617976
+    },
+    "error_analysis": {
+      "body_part": [
+        {
+          "body_part": "back",
+          "claims": 1986,
+          "mean_actual": 32307.521468024872,
+          "mean_expected": 32085.900052975114,
+          "bias_ratio": 0.9931402532605572,
+          "mae": 20467.225621828187,
+          "rmsle": 0.5895822194321807,
+          "mean_log_error": -0.06469738383665748
+        },
+        {
+          "body_part": "multiple",
+          "claims": 1907,
+          "mean_actual": 23621.200628188624,
+          "mean_expected": 25399.119841003157,
+          "bias_ratio": 1.0752679442844593,
+          "mae": 14559.764429084618,
+          "rmsle": 0.5917418297362871,
+          "mean_log_error": -0.06709056393600661
+        },
+        {
+          "body_part": "finger",
+          "claims": 1769,
+          "mean_actual": 8133.17782507428,
+          "mean_expected": 8526.109375668144,
+          "bias_ratio": 1.0483121799430564,
+          "mae": 4678.944348614061,
+          "rmsle": 0.45870552826799305,
+          "mean_log_error": -0.005536304162004506
+        },
+        {
+          "body_part": "shoulder",
+          "claims": 815,
+          "mean_actual": 35903.12737187227,
+          "mean_expected": 37546.3781304672,
+          "bias_ratio": 1.0457690145366643,
+          "mae": 21488.342157825256,
+          "rmsle": 0.625876937441702,
+          "mean_log_error": -0.07802324471795657
+        },
+        {
+          "body_part": "eye",
+          "claims": 798,
+          "mean_actual": 3089.8877005125314,
+          "mean_expected": 3893.114593091095,
+          "bias_ratio": 1.2599534256359313,
+          "mae": 1430.5524709271244,
+          "rmsle": 0.3718726421699297,
+          "mean_log_error": 0.02980124126805253
+        },
+        {
+          "body_part": "hand",
+          "claims": 661,
+          "mean_actual": 15629.055539783209,
+          "mean_expected": 9832.59618410796,
+          "bias_ratio": 0.6291228640834653,
+          "mae": 11771.177025044506,
+          "rmsle": 0.5177328437962123,
+          "mean_log_error": -0.02768884402394288
+        },
+        {
+          "body_part": "knee",
+          "claims": 573,
+          "mean_actual": 27132.276755844854,
+          "mean_expected": 32121.449064648412,
+          "bias_ratio": 1.1838832897695837,
+          "mae": 16146.792663867987,
+          "rmsle": 0.5282635450659308,
+          "mean_log_error": -0.01914468301572433
+        },
+        {
+          "body_part": "arm",
+          "claims": 516,
+          "mean_actual": 18011.832577650774,
+          "mean_expected": 18098.860975549007,
+          "bias_ratio": 1.0048317347789597,
+          "mae": 11824.28979055002,
+          "rmsle": 0.5862481607210988,
+          "mean_log_error": -0.013020640091737128
+        },
+        {
+          "body_part": "wrist",
+          "claims": 332,
+          "mean_actual": 24019.338210253616,
+          "mean_expected": 26465.247547033938,
+          "bias_ratio": 1.1018308379427453,
+          "mae": 13522.072093871291,
+          "rmsle": 0.6053729433229512,
+          "mean_log_error": -0.08476099356739607
+        },
+        {
+          "body_part": "other",
+          "claims": 265,
+          "mean_actual": 35085.633698219244,
+          "mean_expected": 49079.41910983864,
+          "bias_ratio": 1.3988465915133137,
+          "mae": 22872.846848628215,
+          "rmsle": 0.43846114196985386,
+          "mean_log_error": 0.06827071518464504
+        },
+        {
+          "body_part": "ankle",
+          "claims": 263,
+          "mean_actual": 21323.731842949048,
+          "mean_expected": 18991.784356783308,
+          "bias_ratio": 0.8906407422799762,
+          "mae": 12818.971419666166,
+          "rmsle": 0.7125699145650988,
+          "mean_log_error": -0.1912087898909257
+        },
+        {
+          "body_part": "foot",
+          "claims": 232,
+          "mean_actual": 20483.358870136206,
+          "mean_expected": 20935.282848213068,
+          "bias_ratio": 1.0220629820012452,
+          "mae": 13464.123267098454,
+          "rmsle": 0.575751779835231,
+          "mean_log_error": -0.08639600718489003
+        },
+        {
+          "body_part": "head",
+          "claims": 230,
+          "mean_actual": 15462.181880951304,
+          "mean_expected": 15902.167094497212,
+          "bias_ratio": 1.028455570949398,
+          "mae": 10029.242021980068,
+          "rmsle": 0.5005216439290083,
+          "mean_log_error": 0.0113354575073345
+        },
+        {
+          "body_part": "leg",
+          "claims": 202,
+          "mean_actual": 15274.885454385643,
+          "mean_expected": 15584.129880088949,
+          "bias_ratio": 1.0202452860695277,
+          "mae": 9099.844568112778,
+          "rmsle": 0.586609204615165,
+          "mean_log_error": -0.04021194963224308
+        },
+        {
+          "body_part": "neck",
+          "claims": 142,
+          "mean_actual": 25485.38886304225,
+          "mean_expected": 27023.776102483556,
+          "bias_ratio": 1.0603634987760457,
+          "mae": 15507.720213146451,
+          "rmsle": 0.5634612795354621,
+          "mean_log_error": -0.02819322831757899
+        },
+        {
+          "body_part": "trunk",
+          "claims": 109,
+          "mean_actual": 33859.30245295413,
+          "mean_expected": 39048.810702626804,
+          "bias_ratio": 1.1532668387626488,
+          "mae": 16346.910141795657,
+          "rmsle": 0.4266571811204184,
+          "mean_log_error": -0.0699339812270556
+        }
+      ],
+      "injury_nature": [
+        {
+          "injury_nature": "strain",
+          "claims": 3412,
+          "mean_actual": 30704.938520387164,
+          "mean_expected": 33024.9748181774,
+          "bias_ratio": 1.0755590601899365,
+          "mae": 19520.796751690585,
+          "rmsle": 0.5746136794718208,
+          "mean_log_error": -0.03696040723399251
+        },
+        {
+          "injury_nature": "laceration",
+          "claims": 2338,
+          "mean_actual": 7517.532455022669,
+          "mean_expected": 8082.367633883179,
+          "bias_ratio": 1.075135715374681,
+          "mae": 4178.6578803301145,
+          "rmsle": 0.4512832712764335,
+          "mean_log_error": -0.0028222933130735484
+        },
+        {
+          "injury_nature": "other",
+          "claims": 1278,
+          "mean_actual": 26737.68471574077,
+          "mean_expected": 26597.415327072576,
+          "bias_ratio": 0.9947538692987274,
+          "mae": 16151.538274669709,
+          "rmsle": 0.5906573658133755,
+          "mean_log_error": -0.06832291625636663
+        },
+        {
+          "injury_nature": "foreign_body",
+          "claims": 617,
+          "mean_actual": 2792.8166352095627,
+          "mean_expected": 3420.7043047876496,
+          "bias_ratio": 1.2248223752544973,
+          "mae": 1585.0290762744442,
+          "rmsle": 0.37949985500721994,
+          "mean_log_error": 0.015035615248417305
+        },
+        {
+          "injury_nature": "fracture",
+          "claims": 616,
+          "mean_actual": 31780.294978999835,
+          "mean_expected": 27716.10102623209,
+          "bias_ratio": 0.8721159147373133,
+          "mae": 20902.394745233818,
+          "rmsle": 0.6323443709580127,
+          "mean_log_error": -0.11314940320753145
+        },
+        {
+          "injury_nature": "contusion",
+          "claims": 463,
+          "mean_actual": 12322.952011645573,
+          "mean_expected": 13008.817720435343,
+          "bias_ratio": 1.0556575817337928,
+          "mae": 6977.702337115888,
+          "rmsle": 0.5431839587009099,
+          "mean_log_error": -0.03878633447870581
+        },
+        {
+          "injury_nature": "sprain",
+          "claims": 447,
+          "mean_actual": 22273.41091017651,
+          "mean_expected": 24221.33650004602,
+          "bias_ratio": 1.0874551992833537,
+          "mae": 13443.51120265582,
+          "rmsle": 0.6579744082424285,
+          "mean_log_error": -0.1442413799374144
+        },
+        {
+          "injury_nature": "soft_tissue",
+          "claims": 308,
+          "mean_actual": 23261.39341370065,
+          "mean_expected": 17466.84315613881,
+          "bias_ratio": 0.7508941036116552,
+          "mae": 15502.337221914615,
+          "rmsle": 0.6646248394150134,
+          "mean_log_error": -0.12842420082576764
+        },
+        {
+          "injury_nature": "burn",
+          "claims": 275,
+          "mean_actual": 5878.718274906545,
+          "mean_expected": 7343.697709656199,
+          "bias_ratio": 1.2492004832078711,
+          "mae": 3808.7382939379627,
+          "rmsle": 0.47669112874198416,
+          "mean_log_error": 0.12009530186678288
+        },
+        {
+          "injury_nature": "inflammation",
+          "claims": 199,
+          "mean_actual": 33545.3989284784,
+          "mean_expected": 33104.26964077159,
+          "bias_ratio": 0.9868497826289881,
+          "mae": 18893.4153256156,
+          "rmsle": 0.6281308705181089,
+          "mean_log_error": -0.10026286412353584
+        },
+        {
+          "injury_nature": "puncture",
+          "claims": 186,
+          "mean_actual": 11674.004316305914,
+          "mean_expected": 11803.937989646194,
+          "bias_ratio": 1.0111301717748031,
+          "mae": 6584.987321890075,
+          "rmsle": 0.49685577003168846,
+          "mean_log_error": -0.055288051458149794
+        },
+        {
+          "injury_nature": "pain",
+          "claims": 180,
+          "mean_actual": 37888.73379159055,
+          "mean_expected": 36001.83657276153,
+          "bias_ratio": 0.9501989897786496,
+          "mae": 20668.967687096116,
+          "rmsle": 0.5764076737884826,
+          "mean_log_error": -0.15277567408366505
+        },
+        {
+          "injury_nature": "crush",
+          "claims": 153,
+          "mean_actual": 20172.715106849675,
+          "mean_expected": 19313.25828560104,
+          "bias_ratio": 0.9573950845636638,
+          "mae": 12141.283308398217,
+          "rmsle": 0.6641483401232872,
+          "mean_log_error": -0.13424745100736593
+        },
+        {
+          "injury_nature": "psychological",
+          "claims": 102,
+          "mean_actual": 66285.84320550981,
+          "mean_expected": 89401.53861153556,
+          "bias_ratio": 1.3487274852091546,
+          "mae": 45780.39290607371,
+          "rmsle": 0.5441407096875589,
+          "mean_log_error": 0.07234406383913222
+        }
+      ],
+      "wage_band": [
+        {
+          "wage_band": "<200",
+          "claims": 217,
+          "mean_actual": 17871.60346279862,
+          "mean_expected": 17509.242165062533,
+          "bias_ratio": 0.9797241865571618,
+          "mae": 10801.94633450826,
+          "rmsle": 0.583231563120873,
+          "mean_log_error": -0.11827836561473652
+        },
+        {
+          "wage_band": "200-300",
+          "claims": 525,
+          "mean_actual": 19657.32159445314,
+          "mean_expected": 21156.191299317004,
+          "bias_ratio": 1.0762499457345607,
+          "mae": 12021.412456186996,
+          "rmsle": 0.5242686409148085,
+          "mean_log_error": -0.057790568393866405
+        },
+        {
+          "wage_band": "300-400",
+          "claims": 503,
+          "mean_actual": 28630.261286096025,
+          "mean_expected": 21317.559569386172,
+          "bias_ratio": 0.7445813838848482,
+          "mae": 20525.467833281506,
+          "rmsle": 0.6154412252835542,
+          "mean_log_error": -0.12912911005583322
+        },
+        {
+          "wage_band": "400-500",
+          "claims": 1121,
+          "mean_actual": 21874.086533566548,
+          "mean_expected": 24343.06820441843,
+          "bias_ratio": 1.1128724469048408,
+          "mae": 13568.089197993544,
+          "rmsle": 0.5667447067519331,
+          "mean_log_error": -0.0447654228636536
+        },
+        {
+          "wage_band": "500-750",
+          "claims": 6434,
+          "mean_actual": 17919.752446054477,
+          "mean_expected": 18396.314115361343,
+          "bias_ratio": 1.026594210536195,
+          "mae": 11181.626249496116,
+          "rmsle": 0.537867152215472,
+          "mean_log_error": -0.011209201824192147
+        },
+        {
+          "wage_band": "750-1,000",
+          "claims": 1183,
+          "mean_actual": 29307.158702003886,
+          "mean_expected": 33294.09530886717,
+          "bias_ratio": 1.136039683935334,
+          "mae": 17814.955465742896,
+          "rmsle": 0.5404799656672856,
+          "mean_log_error": -0.06959691273968925
+        },
+        {
+          "wage_band": "1,000-1,500",
+          "claims": 528,
+          "mean_actual": 41453.80107716402,
+          "mean_expected": 45271.14975818484,
+          "bias_ratio": 1.0920868191053223,
+          "mae": 22946.711207537257,
+          "rmsle": 0.5632961953295058,
+          "mean_log_error": -0.14561346722265558
+        },
+        {
+          "wage_band": "1,500+",
+          "claims": 283,
+          "mean_actual": 24954.829050830034,
+          "mean_expected": 25215.71054627711,
+          "bias_ratio": 1.0104541487707928,
+          "mae": 15237.17965720796,
+          "rmsle": 0.6080694015377837,
+          "mean_log_error": -0.12351266282686643
+        }
+      ],
+      "accident_year": [
+        {
+          "accident_year": 2002,
+          "claims": 1793,
+          "mean_actual": 16433.913088379588,
+          "mean_expected": 18096.949858318494,
+          "bias_ratio": 1.1011954219908122,
+          "mae": 10585.39425345574,
+          "rmsle": 0.5444694890466845,
+          "mean_log_error": 0.03439636008194798
+        },
+        {
+          "accident_year": 2003,
+          "claims": 2978,
+          "mean_actual": 17763.855097232674,
+          "mean_expected": 19813.34872336062,
+          "bias_ratio": 1.1153743719991966,
+          "mae": 11799.795249244586,
+          "rmsle": 0.5518267398262047,
+          "mean_log_error": 0.006684397051991931
+        },
+        {
+          "accident_year": 2004,
+          "claims": 3032,
+          "mean_actual": 22339.145844411807,
+          "mean_expected": 24040.768551045116,
+          "bias_ratio": 1.076172236775963,
+          "mae": 14014.076368270145,
+          "rmsle": 0.540259878634022,
+          "mean_log_error": -0.030488896532460587
+        },
+        {
+          "accident_year": 2005,
+          "claims": 2997,
+          "mean_actual": 27353.753381216586,
+          "mean_expected": 25823.252372502397,
+          "bias_ratio": 0.9440478610966362,
+          "mae": 15696.906023974427,
+          "rmsle": 0.555890431129049,
+          "mean_log_error": -0.14303701559573634
+        }
+      ],
+      "size_group": [
+        {
+          "size_group": "Top 1%",
+          "claims": 108,
+          "mean_actual": 331542.8342175926,
+          "mean_expected": 76135.86390533275,
+          "bias_ratio": 0.22964110832015314,
+          "mae": 255406.97031225986,
+          "rmsle": 2.205506398987374,
+          "mean_log_error": -1.9871025571025
+        },
+        {
+          "size_group": "Top 1-10%",
+          "claims": 972,
+          "mean_actual": 95538.68008074074,
+          "mean_expected": 73142.15599912628,
+          "bias_ratio": 0.7655763711337971,
+          "mae": 49523.90587667456,
+          "rmsle": 1.1824119381368199,
+          "mean_log_error": -0.7950643758735817
+        },
+        {
+          "size_group": "Bottom 90%",
+          "claims": 9720,
+          "mean_actual": 10638.686481152901,
+          "mean_expected": 16709.776982342057,
+          "bias_ratio": 1.570661661281632,
+          "mae": 6988.942360626668,
+          "rmsle": 0.37476675714608454,
+          "mean_log_error": 0.056364628347439695
+        }
+      ]
+    },
+    "n_features": 126
+  }
+}

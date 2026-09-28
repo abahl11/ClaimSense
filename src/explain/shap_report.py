@@ -21,7 +21,6 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import shap
 from sklearn.ensemble import RandomForestRegressor
 
 from src.config import Config
@@ -90,6 +89,8 @@ def explain(model: CostModel, test: pd.DataFrame, cfg: Config) -> Explained:
     sample = test.iloc[np.sort(rng.choice(len(test), size=size, replace=False))].reset_index(
         drop=True
     )
+    import shap  # imported here: SHAP is large and only this stage needs it
+
     X = model.matrix(sample)
     explainer = shap.TreeExplainer(model.regressor)
     values = np.asarray(explainer.shap_values(X))
@@ -134,6 +135,8 @@ def plot_importance(importance: pd.Series, cfg: Config) -> Path:
 
 def plot_beeswarm(ex: Explained, cfg: Config) -> Path:
     """SHAP's beeswarm summary of the individual columns."""
+    import shap
+
     apply_style(cfg)
     explanation = shap.Explanation(
         values=ex.values, base_values=ex.base_value, feature_names=ex.labels
@@ -208,6 +211,8 @@ def display_value(ex: Explained, row: int, position: int) -> float:
 
 def plot_waterfall(ex: Explained, row: int, label: str, cfg: Config) -> Path:
     """SHAP waterfall for one claim."""
+    import shap
+
     apply_style(cfg)
     data = np.array([display_value(ex, row, i) for i in range(ex.values.shape[1])])
     explanation = shap.Explanation(
@@ -236,6 +241,32 @@ def natural_values(ex: Explained, position: int) -> np.ndarray:
 def is_logged(ex: Explained, position: int) -> bool:
     """Whether an input is skewed enough to plot on a log axis."""
     return ex.branches[position] == "log" or ex.columns[position].startswith("log_")
+
+
+def shrink_note(effect: dict[str, float]) -> str:
+    """Whether the model moves less than the estimates themselves (it shrinks extremes)."""
+    if effect["low_value"] <= 0:
+        return "."
+    spread = effect["high_value"] / effect["low_value"]
+    if np.exp(effect["difference"]) < spread:
+        return (
+            f", while the estimates themselves differ {spread:.1f}-fold: the model shrinks "
+            "extreme estimates towards what similar claims usually cost."
+        )
+    return "."
+
+
+def strength(effects: pd.Series) -> str:
+    """'strongly' for effects beyond x1.5 (or /1.5), 'moderately' otherwise."""
+    return "strongly" if np.abs(effects).max() > np.log(1.5) else "moderately"
+
+
+def age_headline(effect: dict[str, float], natures: pd.Series) -> str:
+    """Compare the age effect with the spread across injury natures."""
+    injury_spread = natures.max() - natures.min() if len(natures) >= 2 else 0.0
+    if abs(effect["difference"]) < injury_spread:
+        return "Age matters, but less than the type of injury."
+    return "Age matters as much as the type of injury."
 
 
 def factor(log_change: float) -> str:
@@ -306,7 +337,7 @@ def insights(
             f"the lowest tenth of initial estimates (<= {money(effect['low_value'])}) to the "
             "highest "
             f"(>= {money(effect['high_value'])}) changes the model output by "
-            f"{factor(effect['difference'])} on average." + ratio_note
+            f"{factor(effect['difference'])} on average" + shrink_note(effect) + ratio_note
         )
     if "Reporting delay" in positions:
         effect = numeric_effect(ex, positions["Reporting delay"])
@@ -324,7 +355,8 @@ def insights(
     if len(natures) >= 2:
         high, low = natures.index[-1], natures.index[0]
         lines.append(
-            f"**Injury type shifts costs strongly.** Relative to the average claim, the injury "
+            f"**Injury type shifts costs {strength(natures)}.** Relative to the average claim, "
+            "the injury "
             f"nature alone moves predictions by {factor(natures.iloc[-1])} for "
             f"{high.replace('_', ' ')} claims and {factor(natures.iloc[0])} for "
             f"{low.replace('_', ' ')} claims."
@@ -333,7 +365,7 @@ def insights(
         effect = numeric_effect(ex, positions["Age"])
         direction = "older" if effect["difference"] > 0 else "younger"
         lines.append(
-            f"**Age matters, but less than the injury itself.** The oldest tenth of claimants "
+            f"**{age_headline(effect, natures)}** The oldest tenth of claimants "
             f"(>= {effect['high_value']:.0f}) gets {factor(effect['difference'])} the "
             "attribution of "
             f"the youngest (<= {effect['low_value']:.0f}): {direction} workers' claims cost more, "
@@ -429,7 +461,12 @@ def gender_bias_text(comparison: dict[str, Any]) -> str:
     """Whether removing gender makes the per-gender bias worse."""
     with_gender = worst_gender_bias(comparison["with_gender"])
     without = worst_gender_bias(comparison["without_gender"])
-    change = "does not worsen" if without <= with_gender + 0.01 else "worsens"
+    if without < with_gender - 0.005:
+        change = "reduces"
+    elif without <= with_gender + 0.01:
+        change = "barely changes"
+    else:
+        change = "worsens"
     return (
         f"Removing it {change} the per-gender bias (largest gap between predicted and actual "
         f"cost for either gender: {with_gender:.1%} with it, {without:.1%} without)."

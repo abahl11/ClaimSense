@@ -1,0 +1,98 @@
+{
+  "cutoff": "2002-05-29T09:00:00",
+  "cv_folds": 5,
+  "inner_holdout_fraction": 0.2,
+  "train": {
+    "claims": 43200,
+    "median_cost": 2819.0750795000004,
+    "mean_cost": 8382.029615546551
+  },
+  "test": {
+    "claims": 10800,
+    "median_cost": 7640.067741,
+    "mean_cost": 21488.727382480203,
+    "share_above_train_high_cost_threshold": 0.31046296296296294
+  },
+  "high_cost_threshold": 16406.011376,
+  "high_cost_quantile": 0.9,
+  "folds": [
+    {
+      "fit": {
+        "start": "1988-01-01",
+        "end": "1990-05-28",
+        "claims": 7199
+      },
+      "eval": {
+        "start": "1990-05-28",
+        "end": "1992-10-13",
+        "claims": 7201,
+        "median_cost": 2422.752598
+      }
+    },
+    {
+      "fit": {
+        "start": "1988-01-01",
+        "end": "1992-10-13",
+        "claims": 14400
+      },
+      "eval": {
+        "start": "1992-10-13",
+        "end": "1995-04-02",
+        "claims": 7200,
+        "median_cost": 2909.8669075000003
+      }
+    },
+    {
+      "fit": {
+        "start": "1988-01-01",
+        "end": "1995-04-02",
+        "claims": 21600
+      },
+      "eval": {
+        "start": "1995-04-02",
+        "end": "1997-07-31",
+        "claims": 7199,
+        "median_cost": 1943.679359
+      }
+    },
+    {
+      "fit": {
+        "start": "1988-01-01",
+        "end": "1997-07-31",
+        "claims": 28799
+      },
+      "eval": {
+        "start": "1997-07-31",
+        "end": "2000-01-06",
+        "claims": 7201,
+        "median_cost": 3167.803056
+      }
+    },
+    {
+      "fit": {
+        "start": "1988-01-01",
+        "end": "2000-01-06",
+        "claims": 36000
+      },
+      "eval": {
+        "start": "2000-01-07",
+        "end": "2002-05-29",
+        "claims": 7200,
+        "median_cost": 5584.7773369999995
+      }
+    }
+  ],
+  "final": {
+    "fit": {
+      "start": "1988-01-01",
+      "end": "2002-05-29",
+      "claims": 43200
+    },
+    "eval": {
+      "start": "2002-05-29",
+      "end": "2005-12-31",
+      "claims": 10800,
+      "median_cost": 7640.067741
+    }
+  }
+}

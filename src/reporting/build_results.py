@@ -602,7 +602,7 @@ def relative_verdict(gap: float) -> str:
         return (
             "The gain is marginal: the adjuster's initial estimate already carries most of the "
             "signal for *ranking* claims by severity. The model's value is elsewhere: accurate "
-            "cost levels and totals (sections 2 and 6), an uncertainty range, and drivers."
+            "cost levels and totals, an uncertainty range, and drivers."
         )
     if gap < 0.05:
         return "A modest gain over the adjuster's own estimate."
